@@ -2,984 +2,1293 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Northstar — The Clock</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;0,700;1,300;1,600&family=Tenor+Sans&family=DM+Mono&display=swap" rel="stylesheet">
+<title>Northstar — The Ad</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600;1,700&family=Tenor+Sans&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
 :root{
-  --cream:#F4F0E8;
-  --gold:#B8962E;
-  --gold2:#D4AE4A;
-  --gold3:#8B6E1A;
-  --ink:#16120E;
-  --ink2:#2A241C;
-  --fog:#7A7268;
-  --fog2:#C0BAB0;
+  --gold:#C9A84C;
+  --gold2:#E8C97A;
+  --gold3:#8B6820;
+  --cream:#F2EDE4;
+  --ink:#0D0B08;
+  --ink2:#1A1610;
+  --fog:#6B6257;
+  --fog2:#A09890;
 }
 html,body{
-  width:1280px;height:720px;overflow:hidden;
-  background:#000;
+  width:100%;height:100vh;
+  overflow:hidden;background:#000;
   font-family:'Tenor Sans',sans-serif;
   cursor:none;
+  min-height:600px;
 }
 
-/* ── CUSTOM CURSOR ── */
+/* CURSOR */
 #cursor{
-  position:fixed;width:8px;height:8px;
+  position:fixed;width:6px;height:6px;
   background:var(--gold);border-radius:50%;
   pointer-events:none;z-index:10000;
   transform:translate(-50%,-50%);
-  transition:transform 0.1s ease;
+  mix-blend-mode:screen;
+  transition:width 0.3s,height 0.3s;
+}
+#cursor.big{width:40px;height:40px;opacity:0.15;}
+
+/* PROGRESS */
+#prog{
+  position:fixed;top:0;left:0;height:1px;
+  background:var(--gold);z-index:9998;
+  width:0%;
+  transition:width 0.1s linear;
 }
 
-/* ══ GATE ══ */
+/* GATE */
 #gate{
-  position:fixed;inset:0;background:var(--ink);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  z-index:9999;
-}
-#gate .g-compass{margin-bottom:28px;animation:spin-slow 12s linear infinite;}
-@keyframes spin-slow{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
-#gate .g-name{
-  font-family:'Cormorant Garamond',serif;font-weight:300;
-  font-size:48px;letter-spacing:0.1em;color:var(--cream);
-  margin-bottom:4px;
-}
-#gate .g-sub{font-size:9px;letter-spacing:0.8em;color:var(--gold);text-transform:uppercase;margin-bottom:40px;}
-#playBtn{
-  font-family:'Tenor Sans',sans-serif;
-  font-size:10px;letter-spacing:0.6em;text-transform:uppercase;
-  color:var(--gold2);background:transparent;
-  border:1px solid var(--gold3);padding:14px 48px;cursor:pointer;
-  transition:all 0.25s;
-}
-#playBtn:hover{background:var(--gold);color:var(--ink);border-color:var(--gold);}
-
-/* ══ SHELL ══ */
-#ad{position:relative;width:1280px;height:720px;overflow:hidden;display:none;background:var(--ink);}
-#prog{position:fixed;bottom:0;left:0;height:2px;background:var(--gold2);width:0%;z-index:999;transition:none;}
-
-/* ══ GLOBAL CANVAS (always on) ══ */
-#bg-canvas{position:absolute;inset:0;z-index:0;}
-
-/* ══ SCENES ══ */
-.scene{position:absolute;inset:0;z-index:1;pointer-events:none;display:none;}
-.scene.active{display:block;}
-
-/* ════════════════════════════════════════
-   S1: THE LIVE CLOCK  (0–7s)
-   Opens in media res. A client is searching.
-   A ticking clock. You have no website.
-════════════════════════════════════════ */
-#s1{background:var(--ink);}
-
-#s1 .s1-top-bar{
-  position:absolute;top:0;left:0;right:0;height:48px;
-  border-bottom:1px solid rgba(184,150,46,0.15);
-  display:flex;align-items:center;padding:0 56px;
-  justify-content:space-between;
-}
-#s1 .s1-url{font-family:'DM Mono',monospace;font-size:11px;color:var(--fog);letter-spacing:0.04em;}
-#s1 .s1-status{font-family:'DM Mono',monospace;font-size:10px;color:var(--gold3);letter-spacing:0.04em;}
-
-/* The main clock */
-#s1 .clock-wrap{
-  position:absolute;
-  right:80px;top:50%;transform:translateY(-50%);
-  text-align:right;
-}
-#s1 .clock-label{
-  font-size:9px;letter-spacing:0.7em;color:var(--gold3);text-transform:uppercase;
-  margin-bottom:6px;
-  opacity:0;animation:fadein 0.5s ease 0.3s forwards;
-}
-#s1 .clock-display{
-  font-family:'Cormorant Garamond',serif;font-weight:300;
-  font-size:160px;line-height:1;letter-spacing:-0.04em;
-  color:var(--cream);
-  opacity:0;animation:fadein 0.6s ease 0.4s forwards;
-}
-#s1 .clock-display .colon{
-  display:inline-block;
-  animation:blink 1s step-start infinite;
-  color:var(--gold);
-}
-@keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
-#s1 .clock-sub{
-  font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.15em;
-  color:var(--fog);margin-top:4px;
-  opacity:0;animation:fadein 0.5s ease 0.7s forwards;
-}
-
-/* Left text block */
-#s1 .s1-copy{
-  position:absolute;left:80px;top:50%;transform:translateY(-50%);
-  max-width:560px;
-}
-.s1-micro{
-  font-size:9px;letter-spacing:0.7em;color:var(--gold3);text-transform:uppercase;
-  margin-bottom:20px;
-  opacity:0;animation:fadein 0.5s ease 0.2s forwards;
-}
-.s1-heading{
-  font-family:'Cormorant Garamond',serif;
-  font-weight:300;font-size:68px;line-height:1;
-  color:var(--cream);letter-spacing:-0.01em;
-}
-.s1-heading .reveal-word{
-  display:inline-block;overflow:hidden;
-  vertical-align:bottom;
-}
-.s1-heading .reveal-word span{
-  display:inline-block;
-  transform:translateY(100%);opacity:0;
-}
-/* each word animates in */
-.s1-heading .w1 span{animation:wordrise 0.7s cubic-bezier(0.16,1,0.3,1) 0.3s forwards;}
-.s1-heading .w2 span{animation:wordrise 0.7s cubic-bezier(0.16,1,0.3,1) 0.46s forwards;}
-.s1-heading .w3 span{animation:wordrise 0.7s cubic-bezier(0.16,1,0.3,1) 0.62s forwards;}
-.s1-heading .w4 span{animation:wordrise 0.7s cubic-bezier(0.16,1,0.3,1) 0.78s forwards;}
-.s1-heading .w5 span{animation:wordrise 0.7s cubic-bezier(0.16,1,0.3,1) 0.94s forwards;}
-.s1-heading .w6 span{animation:wordrise 0.7s cubic-bezier(0.16,1,0.3,1) 1.1s forwards;}
-.s1-heading .w7 span{animation:wordrise 0.7s cubic-bezier(0.16,1,0.3,1) 1.26s forwards;}
-@keyframes wordrise{to{transform:translateY(0);opacity:1;}}
-
-.s1-heading .gold-word span{color:var(--gold2);}
-.s1-heading .italic-word span{font-style:italic;font-weight:300;}
-
-.s1-sub{
-  font-size:13px;color:var(--fog);line-height:1.8;
-  margin-top:20px;letter-spacing:0.04em;max-width:400px;
-  opacity:0;animation:fadein 0.6s ease 1.5s forwards;
-}
-
-/* Bottom data strip */
-#s1 .s1-data{
-  position:absolute;bottom:0;left:0;right:0;height:44px;
-  border-top:1px solid rgba(184,150,46,0.1);
-  display:flex;align-items:center;padding:0 56px;gap:48px;
-  opacity:0;animation:fadein 0.6s ease 1.2s forwards;
-}
-.data-item{font-family:'DM Mono',monospace;font-size:9px;color:var(--fog);letter-spacing:0.1em;}
-.data-item .data-val{color:var(--gold2);margin-right:8px;}
-
-@keyframes fadein{to{opacity:1;}}
-
-
-/* ════════════════════════════════════════
-   S2: THE CONSEQUENCE  (7–13s)
-   Full cream. Stark. A client searching
-   for a business — finds nothing.
-   The cost of no website visualised.
-════════════════════════════════════════ */
-#s2{background:var(--cream);}
-
-#s2 .s2-gold-stripe{
-  position:absolute;top:0;left:0;right:0;height:3px;
-  background:var(--gold);
-  transform:scaleX(0);transform-origin:left;
-  animation:barslide 0.7s cubic-bezier(0.16,1,0.3,1) 0.1s forwards;
-}
-@keyframes barslide{to{transform:scaleX(1);}}
-
-/* Search bar mockup — the emotional gut punch */
-#s2 .search-area{
-  position:absolute;top:50%;left:50%;
-  transform:translate(-50%,-55%);
-  width:800px;
-}
-#s2 .search-label{
-  font-size:9px;letter-spacing:0.7em;color:var(--gold3);text-transform:uppercase;
-  margin-bottom:14px;text-align:center;
-  opacity:0;animation:fadein 0.5s ease 0.15s forwards;
-}
-#s2 .search-bar{
-  width:100%;height:56px;
-  border:1px solid var(--fog2);
-  display:flex;align-items:center;padding:0 20px;gap:14px;
-  background:#fff;
-  opacity:0;animation:fadein 0.4s ease 0.3s forwards;
-}
-#s2 .search-icon{font-size:16px;color:var(--fog);}
-#s2 .search-text{
-  font-family:'DM Mono',monospace;font-size:14px;color:var(--ink2);
-  letter-spacing:0.02em;
-  overflow:hidden;white-space:nowrap;
-}
-#s2 .type-cursor{
-  display:inline-block;width:2px;height:16px;
-  background:var(--ink);vertical-align:middle;
-  margin-left:1px;
-  animation:blink 0.8s step-start infinite;
-}
-
-#s2 .search-result-area{
-  margin-top:16px;
-  opacity:0;animation:fadein 0.4s ease 1.8s forwards;
-}
-#s2 .no-result{
-  height:52px;border:1px solid rgba(0,0,0,0.08);
-  display:flex;align-items:center;padding:0 20px;gap:16px;
-  background:rgba(0,0,0,0.02);
-}
-#s2 .nr-dot{width:8px;height:8px;border-radius:50%;background:var(--fog2);}
-#s2 .nr-text{
-  font-family:'Cormorant Garamond',serif;font-style:italic;
-  font-size:18px;color:var(--fog);letter-spacing:0.04em;
-}
-#s2 .nr-instead{
-  margin-left:auto;
-  font-size:10px;color:var(--fog2);letter-spacing:0.06em;
-}
-/* A competitor result shows up */
-#s2 .competitor-result{
-  height:52px;border:1px solid rgba(0,0,0,0.08);
-  border-top:none;
-  display:flex;align-items:center;padding:0 20px;gap:16px;
-  background:#fff;
-  opacity:0;animation:fadein 0.5s ease 2.5s forwards;
-}
-#s2 .cr-dot{width:8px;height:8px;border-radius:50%;background:var(--gold);}
-#s2 .cr-text{font-size:14px;color:var(--ink);letter-spacing:0.02em;}
-#s2 .cr-link{
-  margin-left:auto;font-family:'DM Mono',monospace;
-  font-size:10px;color:var(--gold);letter-spacing:0.05em;
-}
-
-#s2 .consequence-label{
-  position:absolute;bottom:80px;left:50%;transform:translateX(-50%);
-  text-align:center;
-  opacity:0;animation:fadein 0.7s ease 3s forwards;
-}
-#s2 .cl-main{
-  font-family:'Cormorant Garamond',serif;font-weight:600;
-  font-size:44px;color:var(--ink);letter-spacing:-0.01em;
-}
-#s2 .cl-main em{font-style:italic;color:var(--gold3);font-weight:300;}
-#s2 .cl-sub{
-  font-size:11px;color:var(--fog);letter-spacing:0.12em;text-transform:uppercase;
-  margin-top:6px;
-}
-
-
-/* ════════════════════════════════════════
-   S3: NORTHSTAR ENTERS  (13–20s)
-   Dark. Dramatic. The brand arrives.
-   Split — logo builds left, 24hr lands right.
-   Camera-zoom energy.
-════════════════════════════════════════ */
-#s3{background:var(--ink);}
-
-/* Horizontal rule that draws across */
-#s3 .s3-rule{
-  position:absolute;top:50%;left:0;right:0;height:1px;
-  background:rgba(184,150,46,0.2);
-  transform:scaleX(0);transform-origin:left;
-  animation:barslide 1.2s cubic-bezier(0.16,1,0.3,1) 0.2s forwards;
-}
-
-#s3 .s3-left{
-  position:absolute;left:0;top:0;bottom:0;right:50%;
-  display:flex;flex-direction:column;
-  justify-content:center;padding:0 0 0 80px;
-}
-#s3 .s3-right{
-  position:absolute;left:50%;top:0;bottom:0;right:0;
-  display:flex;flex-direction:column;
-  justify-content:center;align-items:flex-start;
-  padding:0 0 0 80px;
-  border-left:1px solid rgba(184,150,46,0.12);
-}
-
-/* Logo builds — compass first, then name */
-#s3 .s3-compass{
-  opacity:0;
-  transform:rotate(-90deg) scale(0.6);
-  animation:compass-arrive 1s cubic-bezier(0.34,1.4,0.64,1) 0.3s forwards;
-  margin-bottom:20px;
-  width:52px;height:52px;
-}
-@keyframes compass-arrive{to{opacity:1;transform:rotate(0deg) scale(1);}}
-
-#s3 .s3-name{
-  font-family:'Cormorant Garamond',serif;font-weight:300;
-  font-size:72px;line-height:1;letter-spacing:0.04em;
-  color:var(--cream);
-  overflow:hidden;
-}
-#s3 .s3-name span{
-  display:block;transform:translateY(100%);
-  animation:wordrise 0.8s cubic-bezier(0.16,1,0.3,1) 0.6s forwards;
-}
-#s3 .s3-web{
-  font-size:9px;letter-spacing:0.9em;color:var(--gold);text-transform:uppercase;
-  margin-top:8px;
-  opacity:0;animation:fadein 0.5s ease 1.1s forwards;
-}
-#s3 .s3-verdict{
-  font-family:'Cormorant Garamond',serif;font-style:italic;
-  font-size:17px;color:var(--fog);line-height:1.8;
-  margin-top:24px;max-width:360px;
-  opacity:0;animation:fadein 0.6s ease 1.4s forwards;
-}
-
-/* The 24 — the hero number */
-#s3 .s3-24{
-  font-family:'Cormorant Garamond',serif;font-weight:700;
-  font-size:260px;line-height:0.85;
-  color:var(--gold);letter-spacing:-0.05em;
-  opacity:0;
-  transform:scale(0.75) translateX(-30px);
-  animation:number-land 0.9s cubic-bezier(0.34,1.3,0.64,1) 0.5s forwards;
-}
-@keyframes number-land{to{opacity:1;transform:scale(1) translateX(0);}}
-
-#s3 .s3-24-label{
-  font-size:9px;letter-spacing:0.8em;color:var(--gold3);text-transform:uppercase;
-  margin-top:10px;
-  display:flex;align-items:center;gap:12px;
-  opacity:0;animation:fadein 0.5s ease 1s forwards;
-}
-#s3 .s3-24-label::before{content:'';display:block;width:28px;height:1px;background:var(--gold3);}
-#s3 .s3-promise{
-  font-family:'Cormorant Garamond',serif;
-  font-size:22px;font-weight:300;
-  color:var(--cream);margin-top:16px;line-height:1.4;
-  max-width:380px;
-  opacity:0;animation:fadein 0.6s ease 1.2s forwards;
-}
-#s3 .s3-promise em{font-style:italic;color:var(--gold2);}
-
-
-/* ════════════════════════════════════════
-   S4: THE PROCESS IN MOTION  (20–27s)
-   Three columns — but they ANIMATE in
-   like a timeline being written live.
-   Feel: urgent, precise, cinematic.
-════════════════════════════════════════ */
-#s4{background:var(--ink);}
-
-#s4 .s4-header{
-  position:absolute;top:0;left:0;right:0;height:72px;
-  display:flex;align-items:center;padding:0 80px;
-  justify-content:space-between;
-  border-bottom:1px solid rgba(184,150,46,0.1);
-}
-#s4 .s4-title{
-  font-family:'Cormorant Garamond',serif;font-style:italic;
-  font-size:20px;font-weight:300;color:var(--cream);
-  opacity:0;animation:fadein 0.5s ease 0.1s forwards;
-}
-/* Live timer counting down from 24:00:00 */
-#s4 .s4-live-timer{
-  font-family:'DM Mono',monospace;font-size:13px;
-  color:var(--gold2);letter-spacing:0.12em;
-}
-
-/* Three timeline columns — staggered draw */
-#s4 .timeline{
-  position:absolute;top:72px;left:0;right:0;bottom:0;
-  display:grid;grid-template-columns:1fr 1fr 1fr;
-}
-.tl-col{
-  padding:44px 60px;
-  border-right:1px solid rgba(184,150,46,0.08);
-  position:relative;overflow:hidden;
-}
-.tl-col:last-child{border-right:none;}
-
-/* Line that draws downward — the "timeline" feel */
-.tl-col::before{
-  content:'';position:absolute;
-  left:59px;top:0;width:1px;height:0;
-  background:var(--gold);opacity:0.4;
-  animation:linedown 0.8s cubic-bezier(0.16,1,0.3,1) forwards;
-}
-.tl-col:nth-child(1)::before{animation-delay:0.2s;}
-.tl-col:nth-child(2)::before{animation-delay:0.5s;}
-.tl-col:nth-child(3)::before{animation-delay:0.8s;}
-@keyframes linedown{to{height:100%;}}
-
-/* Dot on the timeline */
-.tl-dot{
-  width:10px;height:10px;border-radius:50%;
-  border:1px solid var(--gold);background:transparent;
-  margin-bottom:28px;position:relative;z-index:1;
-  opacity:0;
-}
-.tl-col:nth-child(1) .tl-dot{animation:fadein 0.3s ease 0.6s forwards;}
-.tl-col:nth-child(2) .tl-dot{animation:fadein 0.3s ease 0.9s forwards;}
-.tl-col:nth-child(3) .tl-dot{animation:fadein 0.3s ease 1.2s forwards;}
-
-.tl-time{
-  font-family:'Cormorant Garamond',serif;font-weight:600;
-  font-size:82px;line-height:1;letter-spacing:-0.02em;
-  margin-bottom:16px;
-  opacity:0;transform:translateY(20px);
-}
-.tl-col:nth-child(1) .tl-time{color:var(--gold2);animation:slideup 0.6s cubic-bezier(0.16,1,0.3,1) 0.5s forwards;}
-.tl-col:nth-child(2) .tl-time{color:var(--fog2);animation:slideup 0.6s cubic-bezier(0.16,1,0.3,1) 0.8s forwards;}
-.tl-col:nth-child(3) .tl-time{color:var(--cream);animation:slideup 0.6s cubic-bezier(0.16,1,0.3,1) 1.1s forwards;}
-@keyframes slideup{to{opacity:1;transform:translateY(0);}}
-
-.tl-unit{
-  font-size:11px;letter-spacing:0.4em;text-transform:uppercase;
-  margin-bottom:20px;opacity:0;
-}
-.tl-col:nth-child(1) .tl-unit{color:var(--gold3);animation:fadein 0.4s ease 0.9s forwards;}
-.tl-col:nth-child(2) .tl-unit{color:var(--fog);animation:fadein 0.4s ease 1.2s forwards;}
-.tl-col:nth-child(3) .tl-unit{color:var(--fog2);animation:fadein 0.4s ease 1.5s forwards;}
-
-.tl-rule{width:0;height:1px;background:var(--gold);margin-bottom:18px;}
-.tl-col:nth-child(1) .tl-rule{animation:widen 0.5s ease 0.85s forwards;}
-.tl-col:nth-child(2) .tl-rule{animation:widen 0.5s ease 1.15s forwards;}
-.tl-col:nth-child(3) .tl-rule{animation:widen 0.5s ease 1.45s forwards;}
-@keyframes widen{to{width:32px;}}
-
-.tl-name{
-  font-family:'Tenor Sans',sans-serif;
-  font-size:15px;letter-spacing:0.12em;text-transform:uppercase;
-  color:var(--cream);margin-bottom:12px;
-  opacity:0;
-}
-.tl-col:nth-child(1) .tl-name{animation:fadein 0.4s ease 1s forwards;}
-.tl-col:nth-child(2) .tl-name{animation:fadein 0.4s ease 1.3s forwards;}
-.tl-col:nth-child(3) .tl-name{animation:fadein 0.4s ease 1.6s forwards;}
-
-.tl-desc{
-  font-size:12px;color:var(--fog);line-height:1.9;letter-spacing:0.03em;
-  opacity:0;
-}
-.tl-col:nth-child(1) .tl-desc{animation:fadein 0.5s ease 1.15s forwards;}
-.tl-col:nth-child(2) .tl-desc{animation:fadein 0.5s ease 1.45s forwards;}
-.tl-col:nth-child(3) .tl-desc{animation:fadein 0.5s ease 1.75s forwards;}
-
-
-/* ════════════════════════════════════════
-   S5: THE CLOSE  (27–36s)
-   Cream. Full screen. Logo. One line.
-   Silence then the phone number lands.
-   Complete stillness = confidence.
-════════════════════════════════════════ */
-#s5{background:var(--cream);}
-
-/* The background — very subtle dot grid */
-#s5::before{
-  content:'';position:absolute;inset:0;
-  background-image:radial-gradient(circle, rgba(184,150,46,0.12) 1px, transparent 1px);
-  background-size:40px 40px;
-}
-
-#s5 .s5-content{
-  position:relative;z-index:2;
-  width:100%;height:100%;
+  position:fixed;inset:0;
+  background:var(--ink);
   display:flex;flex-direction:column;
   align-items:center;justify-content:center;
+  z-index:9999;gap:0;
 }
-
-/* Gold rule draws across first */
-#s5 .s5-top-rule{
-  position:absolute;top:0;left:0;right:0;height:3px;
-  background:var(--gold);
-  transform:scaleX(0);transform-origin:left;
-  animation:barslide 0.9s cubic-bezier(0.16,1,0.3,1) 0.2s forwards;
+.gate-rule{
+  width:1px;height:60px;
+  background:linear-gradient(to bottom,transparent,var(--gold),transparent);
+  margin-bottom:32px;
+  animation:fadein 1s 0.3s both;
 }
-
-/* Logo enters with weight */
-#s5 .s5-logo{
-  display:flex;align-items:center;gap:16px;
-  margin-bottom:44px;
-  opacity:0;transform:translateY(-18px);
-  animation:dropland 0.8s cubic-bezier(0.16,1,0.3,1) 0.5s forwards;
-}
-@keyframes dropland{to{opacity:1;transform:translateY(0);}}
-#s5 .s5-logoname{
-  font-family:'Cormorant Garamond',serif;font-weight:300;
-  font-size:34px;letter-spacing:0.1em;color:var(--ink);
-  line-height:1;
-}
-#s5 .s5-logoweb{
-  font-size:9px;letter-spacing:0.8em;color:var(--gold);
-  text-transform:uppercase;margin-top:3px;
-}
-
-/* The single line — the whole USP in one breath */
-#s5 .s5-headline{
+.gate-logo{
   font-family:'Cormorant Garamond',serif;
-  font-weight:300;
-  text-align:center;
-  margin-bottom:40px;
+  font-weight:300;font-size:42px;
+  letter-spacing:0.18em;color:var(--cream);
+  animation:fadein 1s 0.5s both;
 }
-.hl-row{
+.gate-sub{
+  font-size:8px;letter-spacing:1em;
+  color:var(--gold);text-transform:uppercase;
+  margin-top:6px;margin-bottom:56px;
+  animation:fadein 1s 0.7s both;
+}
+#playBtn{
+  font-family:'Tenor Sans',sans-serif;
+  font-size:9px;letter-spacing:0.7em;text-transform:uppercase;
+  color:var(--cream);background:transparent;
+  border:1px solid rgba(201,168,76,0.4);
+  padding:16px 52px;cursor:pointer;
+  transition:all 0.4s;
+  animation:fadein 1s 1s both;
+}
+#playBtn:hover{
+  background:var(--gold);color:var(--ink);
+  border-color:var(--gold);
+  letter-spacing:1em;
+}
+
+/* MAIN STAGE */
+#stage{
+  position:fixed;inset:0;
+  display:none;background:var(--ink);
+  overflow:hidden;
+}
+
+/* PARTICLE CANVAS */
+#particles{
+  position:absolute;inset:0;
+  z-index:0;pointer-events:none;
+}
+
+/* SCENE SYSTEM */
+.scene{
+  position:absolute;inset:0;
+  z-index:2;
+  opacity:0;pointer-events:none;
+  transition:none;
+}
+.scene.active{opacity:1;}
+.scene.in{
+  animation:scene-in 0.6s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+.scene.out{
+  animation:scene-out 0.4s ease-in forwards;
+}
+@keyframes scene-in{
+  from{opacity:0;} to{opacity:1;}
+}
+@keyframes scene-out{
+  from{opacity:1;} to{opacity:0;}
+}
+
+
+/* ══════════════════════════════════════
+   S1 — THE VOID  (0–5s)
+   One question. Black. Silence building.
+══════════════════════════════════════ */
+#s1{
+  display:flex;align-items:center;justify-content:center;
+  background:var(--ink);
+}
+.s1-center{text-align:center;position:relative;}
+
+.s1-q{
+  font-family:'Cormorant Garamond',serif;
+  font-weight:300;font-style:italic;
+  font-size:clamp(32px,5vw,72px);
+  color:var(--cream);
+  letter-spacing:0.02em;line-height:1.2;
+  opacity:0;
+}
+.s1-q .line{
   display:block;overflow:hidden;
 }
-.hl-row span{
+.s1-q .line span{
   display:block;
-  font-size:80px;line-height:0.92;
-  color:var(--ink);letter-spacing:-0.01em;
-  transform:translateY(108%);
+  animation:wordrise 1s cubic-bezier(0.16,1,0.3,1) both;
 }
-.hl-row span em{font-style:italic;color:var(--gold);}
-.hl-row:nth-child(1) span{animation:wordrise 0.85s cubic-bezier(0.16,1,0.3,1) 0.8s forwards;}
-.hl-row:nth-child(2) span{animation:wordrise 0.85s cubic-bezier(0.16,1,0.3,1) 0.95s forwards;}
-.hl-row:nth-child(3) span{animation:wordrise 0.85s cubic-bezier(0.16,1,0.3,1) 1.1s forwards;}
+.s1-q .l1 span{animation-delay:0.2s;}
+.s1-q .l2 span{animation-delay:0.5s;font-style:normal;font-weight:600;color:var(--gold2);}
+.s1-q .l3 span{animation-delay:0.8s;}
+.s1-q{opacity:1;}
 
-/* Rule */
-#s5 .s5-rule{
+.s1-cursor-blink{
+  display:inline-block;width:2px;height:0.85em;
+  background:var(--gold);vertical-align:middle;
+  margin-left:3px;
+  animation:blink 1s step-start 1.5s infinite;
+}
+.s1-timestamp{
+  position:absolute;bottom:-60px;left:50%;transform:translateX(-50%);
+  font-family:'DM Mono',monospace;font-size:9px;
+  letter-spacing:0.3em;color:var(--fog);text-transform:uppercase;
+  opacity:0;animation:fadein 1s 1.8s forwards;
+  white-space:nowrap;
+}
+
+
+/* ══════════════════════════════════════
+   S2 — THE HUNT  (5–11s)
+   Dark. A phantom browser.
+   They are searching for you right now.
+══════════════════════════════════════ */
+#s2{background:var(--ink);}
+
+.s2-context{
+  position:absolute;top:0;left:0;right:0;
+  height:44px;
+  background:rgba(255,255,255,0.03);
+  border-bottom:1px solid rgba(201,168,76,0.08);
+  display:flex;align-items:center;padding:0 40px;gap:14px;
+}
+.s2-dots{display:flex;gap:6px;}
+.s2-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:rgba(255,255,255,0.1);
+}
+.s2-url{
+  font-family:'DM Mono',monospace;font-size:10px;
+  color:rgba(255,255,255,0.12);letter-spacing:0.03em;
+  flex:1;text-align:center;
+}
+
+.s2-body{
+  position:absolute;
+  top:44px;left:0;right:0;bottom:0;
+  display:flex;align-items:center;justify-content:center;
+}
+
+.s2-search-col{
+  width:min(680px,88%);
+}
+
+.s2-eyebrow{
+  font-size:9px;letter-spacing:0.7em;color:var(--gold3);
+  text-transform:uppercase;margin-bottom:20px;
+  opacity:0;animation:fadein 0.5s 0.1s forwards;
+}
+
+.s2-bar{
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.08);
+  height:52px;
+  display:flex;align-items:center;padding:0 22px;gap:14px;
+  opacity:0;animation:fadein 0.4s 0.25s forwards;
+}
+.s2-bar-icon{color:var(--fog2);font-size:16px;}
+.s2-bar-text{
+  font-family:'DM Mono',monospace;
+  font-size:13px;color:rgba(242,237,228,0.8);
+  letter-spacing:0.02em;
+  flex:1;
+}
+.s2-cursor{
+  display:inline-block;width:2px;height:16px;
+  background:var(--cream);vertical-align:middle;
+  animation:blink 0.7s step-start infinite;
+}
+
+.s2-results{margin-top:8px;}
+
+.s2-result{
+  height:52px;
+  display:flex;align-items:center;padding:0 22px;gap:16px;
+  border:1px solid transparent;
+  border-top:none;
+  opacity:0;
+}
+
+.s2-result.empty{
+  border-color:rgba(255,255,255,0.04);
+  background:rgba(255,255,255,0.02);
+  animation:fadein 0.4s 1.6s forwards;
+}
+.s2-result.competitor{
+  background:rgba(255,255,255,0.03);
+  border-color:rgba(255,255,255,0.06);
+  animation:fadein 0.5s 2.4s forwards;
+}
+.s2-result.competitor2{
+  background:rgba(255,255,255,0.02);
+  border-color:rgba(255,255,255,0.04);
+  animation:fadein 0.4s 2.9s forwards;
+}
+
+.res-indicator{
+  width:6px;height:6px;border-radius:50%;
+  flex-shrink:0;
+}
+.res-indicator.empty{background:rgba(255,255,255,0.08);}
+.res-indicator.live{background:var(--gold);}
+.res-indicator.faded{background:rgba(201,168,76,0.3);}
+
+.res-text{font-size:12px;color:var(--fog2);letter-spacing:0.02em;flex:1;}
+.res-text.live{color:rgba(242,237,228,0.7);}
+.res-link{
+  font-family:'DM Mono',monospace;font-size:9px;
+  color:var(--gold3);letter-spacing:0.08em;
+}
+
+.s2-verdict{
+  margin-top:32px;text-align:center;
+  opacity:0;animation:fadein 0.8s 3.4s forwards;
+}
+.s2-verdict-main{
+  font-family:'Cormorant Garamond',serif;
+  font-weight:300;font-size:clamp(22px,3.5vw,38px);
+  color:var(--cream);letter-spacing:0.02em;
+}
+.s2-verdict-main em{
+  font-style:italic;color:var(--gold2);
+}
+.s2-verdict-sub{
+  font-size:9px;letter-spacing:0.5em;
+  color:var(--fog);text-transform:uppercase;
+  margin-top:8px;
+}
+
+
+/* ══════════════════════════════════════
+   S3 — THE NUMBER  (11–17s)
+   Cream. Clean. One number drops.
+   The cost of invisibility.
+══════════════════════════════════════ */
+#s3{background:var(--cream);}
+
+.s3-bar-top{
+  position:absolute;top:0;left:0;right:0;height:2px;
+  background:var(--gold);
+  transform:scaleX(0);transform-origin:left;
+  animation:barslide 0.8s cubic-bezier(0.16,1,0.3,1) 0.1s forwards;
+}
+
+.s3-left{
+  position:absolute;left:0;top:0;bottom:0;
+  width:50%;
+  display:flex;flex-direction:column;
+  justify-content:center;
+  padding:0 6% 0 7%;
+}
+
+.s3-right{
+  position:absolute;right:0;top:0;bottom:0;
+  width:50%;
+  border-left:1px solid rgba(13,11,8,0.08);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:0 6%;
+}
+
+.s3-label{
+  font-size:8px;letter-spacing:0.8em;
+  color:var(--gold3);text-transform:uppercase;
+  margin-bottom:16px;
+  opacity:0;animation:fadein 0.5s 0.2s forwards;
+}
+
+.s3-headline{
+  font-family:'Cormorant Garamond',serif;
+  font-weight:300;
+  font-size:clamp(28px,4vw,56px);
+  line-height:1.1;color:var(--ink);
+  letter-spacing:-0.01em;
+}
+.s3-headline .hline{display:block;overflow:hidden;}
+.s3-headline .hline span{
+  display:block;
+  animation:wordrise 0.8s cubic-bezier(0.16,1,0.3,1) both;
+}
+.s3-headline .hl1 span{animation-delay:0.2s;}
+.s3-headline .hl2 span{animation-delay:0.38s;font-style:italic;color:var(--gold3);}
+.s3-headline .hl3 span{animation-delay:0.56s;}
+
+.s3-body{
+  margin-top:24px;
+  font-size:12px;color:var(--fog);line-height:1.9;
+  max-width:360px;
+  opacity:0;animation:fadein 0.6s 1s forwards;
+}
+
+.s3-stat-row{
+  display:flex;gap:0;margin-top:32px;
+  opacity:0;animation:fadein 0.5s 1.3s forwards;
+}
+.s3-stat{
+  padding:16px 24px 16px 0;
+  border-right:1px solid rgba(13,11,8,0.1);
+  margin-right:24px;
+}
+.s3-stat:last-child{border-right:none;margin-right:0;}
+.s3-stat-n{
+  font-family:'Cormorant Garamond',serif;
+  font-weight:600;font-size:32px;
+  color:var(--ink);line-height:1;
+}
+.s3-stat-l{
+  font-size:9px;letter-spacing:0.12em;
+  color:var(--fog);text-transform:uppercase;margin-top:4px;
+}
+
+/* The big number */
+.s3-bignum{
+  font-family:'Cormorant Garamond',serif;
+  font-weight:700;
+  font-size:clamp(80px,14vw,180px);
+  line-height:1;letter-spacing:-0.04em;
+  color:var(--ink);
+  opacity:0;transform:scale(0.6) translateY(20px);
+  animation:numland 0.9s cubic-bezier(0.34,1.4,0.64,1) 0.4s forwards;
+}
+.s3-bignum-sub{
+  font-size:9px;letter-spacing:0.6em;
+  color:var(--fog);text-transform:uppercase;
+  margin-top:12px;
+  opacity:0;animation:fadein 0.5s 0.9s forwards;
+}
+.s3-bignum-desc{
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic;font-size:18px;
+  color:var(--fog2);
+  margin-top:8px;text-align:center;
+  max-width:260px;line-height:1.5;
+  opacity:0;animation:fadein 0.6s 1.1s forwards;
+}
+
+
+/* ══════════════════════════════════════
+   S4 — THE ARRIVAL  (17–24s)
+   Northstar. Full impact. Logo builds.
+   Dark. Gold. The brand lands.
+══════════════════════════════════════ */
+#s4{background:var(--ink);}
+
+.s4-grid-line-h{
+  position:absolute;top:50%;left:0;right:0;height:1px;
+  background:rgba(201,168,76,0.07);
+}
+.s4-grid-line-v{
+  position:absolute;left:50%;top:0;bottom:0;width:1px;
+  background:rgba(201,168,76,0.07);
+}
+
+.s4-left{
+  position:absolute;left:0;top:0;bottom:0;right:50%;
+  display:flex;flex-direction:column;
+  align-items:flex-end;justify-content:center;
+  padding:0 6% 0 0;
+}
+
+.s4-right{
+  position:absolute;left:50%;top:0;bottom:0;right:0;
+  display:flex;flex-direction:column;
+  align-items:flex-start;justify-content:center;
+  padding:0 0 0 6%;
+}
+
+/* Logo construction */
+.s4-compass-wrap{
+  margin-bottom:20px;
+  opacity:0;transform:rotate(-180deg) scale(0.3);
+  animation:compass-in 1.1s cubic-bezier(0.34,1.3,0.64,1) 0.1s forwards;
+}
+@keyframes compass-in{
+  to{opacity:1;transform:rotate(0deg) scale(1);}
+}
+
+.s4-wordmark{
+  font-family:'Cormorant Garamond',serif;
+  font-weight:300;
+  font-size:clamp(40px,6vw,84px);
+  letter-spacing:0.06em;
+  color:var(--cream);
+  line-height:1;
+  overflow:hidden;
+  text-align:right;
+}
+.s4-wordmark-inner{
+  display:block;
+  animation:wordrise 0.9s cubic-bezier(0.16,1,0.3,1) 0.55s both;
+}
+
+.s4-tagline{
+  font-size:8px;letter-spacing:1em;
+  color:var(--gold);text-transform:uppercase;
+  margin-top:8px;text-align:right;
+  opacity:0;animation:fadein 0.5s 1s forwards;
+}
+
+.s4-manifesto{
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic;font-weight:300;
+  font-size:clamp(16px,2.2vw,24px);
+  color:var(--fog2);line-height:1.7;
+  max-width:400px;
+  margin-top:24px;text-align:right;
+  opacity:0;animation:fadein 0.7s 1.3s forwards;
+}
+
+/* Right side — the promise */
+.s4-divider{
+  width:1px;height:0;
+  background:var(--gold);
+  margin-bottom:24px;
+  animation:tallgrow 0.7s cubic-bezier(0.16,1,0.3,1) 0.6s forwards;
+}
+@keyframes tallgrow{to{height:64px;}}
+
+.s4-promise-num{
+  font-family:'Cormorant Garamond',serif;
+  font-weight:700;
+  font-size:clamp(100px,18vw,220px);
+  line-height:0.85;letter-spacing:-0.05em;
+  color:var(--gold);
+  opacity:0;transform:translateX(-24px);
+  animation:slidein-right 0.8s cubic-bezier(0.34,1.2,0.64,1) 0.4s forwards;
+}
+@keyframes slidein-right{to{opacity:1;transform:translateX(0);}}
+
+.s4-promise-label{
+  font-size:8px;letter-spacing:0.7em;
+  color:var(--gold3);text-transform:uppercase;
+  display:flex;align-items:center;gap:12px;
+  margin-top:10px;
+  opacity:0;animation:fadein 0.5s 0.9s forwards;
+}
+.s4-promise-label::before{
+  content:'';display:block;
+  width:24px;height:1px;background:var(--gold3);
+}
+
+.s4-promise-copy{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(16px,2vw,22px);
+  font-weight:300;color:var(--cream);
+  line-height:1.5;margin-top:14px;
+  max-width:360px;
+  opacity:0;animation:fadein 0.6s 1.1s forwards;
+}
+.s4-promise-copy em{font-style:italic;color:var(--gold2);}
+
+
+/* ══════════════════════════════════════
+   S5 — THE PROCESS  (24–31s)
+   Three moments. Clinical. Confident.
+   Each phase lands with weight.
+══════════════════════════════════════ */
+#s5{background:var(--ink);}
+
+.s5-header{
+  position:absolute;top:0;left:0;right:0;
+  height:52px;
+  border-bottom:1px solid rgba(201,168,76,0.08);
+  display:flex;align-items:center;
+  padding:0 6%;
+  justify-content:space-between;
+}
+.s5-header-l{
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic;font-size:16px;
+  color:var(--fog2);
+  opacity:0;animation:fadein 0.4s 0.05s forwards;
+}
+.s5-timer{
+  font-family:'DM Mono',monospace;
+  font-size:12px;color:var(--gold2);
+  letter-spacing:0.15em;
+}
+
+.s5-phases{
+  position:absolute;
+  top:52px;left:0;right:0;bottom:0;
+  display:grid;grid-template-columns:1fr 1fr 1fr;
+}
+
+.phase{
+  padding:clamp(24px,5%,56px) clamp(24px,5%,60px);
+  border-right:1px solid rgba(201,168,76,0.07);
+  position:relative;overflow:hidden;
+}
+.phase:last-child{border-right:none;}
+
+/* Vertical timeline bar */
+.phase::before{
+  content:'';position:absolute;
+  left:clamp(23px,4.8%,58px);top:0;
+  width:1px;height:0;
+  background:linear-gradient(to bottom,var(--gold),transparent);
+  opacity:0.5;
+}
+.phase:nth-child(1)::before{animation:linedown 0.9s cubic-bezier(0.16,1,0.3,1) 0.1s forwards;}
+.phase:nth-child(2)::before{animation:linedown 0.9s cubic-bezier(0.16,1,0.3,1) 0.4s forwards;}
+.phase:nth-child(3)::before{animation:linedown 0.9s cubic-bezier(0.16,1,0.3,1) 0.7s forwards;}
+
+.phase-dot{
+  width:8px;height:8px;border-radius:50%;
+  border:1px solid var(--gold);
+  margin-bottom:clamp(16px,3%,32px);
+  position:relative;z-index:1;
+  opacity:0;
+}
+.phase:nth-child(1) .phase-dot{animation:fadein 0.3s 0.5s forwards;}
+.phase:nth-child(2) .phase-dot{animation:fadein 0.3s 0.8s forwards;}
+.phase:nth-child(3) .phase-dot{animation:fadein 0.3s 1.1s forwards;}
+
+.phase-num{
+  font-family:'Cormorant Garamond',serif;
+  font-weight:600;
+  font-size:clamp(60px,10vw,120px);
+  line-height:1;letter-spacing:-0.03em;
+  margin-bottom:8px;
+  opacity:0;transform:translateY(16px);
+}
+.phase:nth-child(1) .phase-num{color:var(--gold2);animation:slideup 0.6s cubic-bezier(0.16,1,0.3,1) 0.45s forwards;}
+.phase:nth-child(2) .phase-num{color:var(--fog2);animation:slideup 0.6s cubic-bezier(0.16,1,0.3,1) 0.75s forwards;}
+.phase:nth-child(3) .phase-num{color:var(--cream);animation:slideup 0.6s cubic-bezier(0.16,1,0.3,1) 1.05s forwards;}
+
+.phase-unit{
+  font-size:9px;letter-spacing:0.5em;text-transform:uppercase;
+  margin-bottom:20px;opacity:0;
+}
+.phase:nth-child(1) .phase-unit{color:var(--gold3);animation:fadein 0.4s 0.85s forwards;}
+.phase:nth-child(2) .phase-unit{color:var(--fog);animation:fadein 0.4s 1.15s forwards;}
+.phase:nth-child(3) .phase-unit{color:var(--fog2);animation:fadein 0.4s 1.45s forwards;}
+
+.phase-rule{
+  width:0;height:1px;
+  background:var(--gold);margin-bottom:14px;
+}
+.phase:nth-child(1) .phase-rule{animation:widen 0.5s ease 0.8s forwards;}
+.phase:nth-child(2) .phase-rule{animation:widen 0.5s ease 1.1s forwards;}
+.phase:nth-child(3) .phase-rule{animation:widen 0.5s ease 1.4s forwards;}
+
+.phase-name{
+  font-family:'Tenor Sans',sans-serif;
+  font-size:clamp(10px,1.2vw,13px);
+  letter-spacing:0.15em;text-transform:uppercase;
+  color:var(--cream);margin-bottom:10px;
+  opacity:0;
+}
+.phase:nth-child(1) .phase-name{animation:fadein 0.4s 0.95s forwards;}
+.phase:nth-child(2) .phase-name{animation:fadein 0.4s 1.25s forwards;}
+.phase:nth-child(3) .phase-name{animation:fadein 0.4s 1.55s forwards;}
+
+.phase-desc{
+  font-size:clamp(10px,1.1vw,12px);
+  color:var(--fog);line-height:1.9;
+  letter-spacing:0.02em;opacity:0;
+}
+.phase:nth-child(1) .phase-desc{animation:fadein 0.5s 1.1s forwards;}
+.phase:nth-child(2) .phase-desc{animation:fadein 0.5s 1.4s forwards;}
+.phase:nth-child(3) .phase-desc{animation:fadein 0.5s 1.7s forwards;}
+
+
+/* ══════════════════════════════════════
+   S6 — THE CLOSE  (31–42s)
+   Everything culminates here.
+   Cream. Silence. Confidence.
+══════════════════════════════════════ */
+#s6{background:var(--cream);}
+
+.s6-top-rule{
+  position:absolute;top:0;left:0;right:0;height:2px;
+  background:var(--gold);
+  transform:scaleX(0);transform-origin:left;
+  animation:barslide 1s cubic-bezier(0.16,1,0.3,1) 0.1s forwards;
+}
+.s6-bottom-rule{
+  position:absolute;bottom:0;left:0;right:0;height:2px;
+  background:var(--gold);opacity:0.3;
+  transform:scaleX(0);transform-origin:right;
+  animation:barslide 1s cubic-bezier(0.16,1,0.3,1) 0.4s forwards;
+}
+
+.s6-content{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:0;
+}
+
+.s6-pre{
+  font-size:8px;letter-spacing:0.9em;
+  color:var(--gold3);text-transform:uppercase;
+  margin-bottom:28px;
+  opacity:0;animation:fadein 0.6s 0.5s forwards;
+}
+
+.s6-logo{
+  display:flex;align-items:center;gap:16px;
+  margin-bottom:48px;
+  opacity:0;transform:translateY(-12px);
+  animation:dropland 0.8s cubic-bezier(0.16,1,0.3,1) 0.6s forwards;
+}
+.s6-logoname{
+  font-family:'Cormorant Garamond',serif;
+  font-weight:300;font-size:clamp(28px,4vw,44px);
+  letter-spacing:0.12em;color:var(--ink);
+}
+
+.s6-headline{
+  font-family:'Cormorant Garamond',serif;
+  font-weight:300;text-align:center;
+  margin-bottom:40px;
+}
+.hrow{display:block;overflow:hidden;}
+.hrow span{
+  display:block;
+  font-size:clamp(48px,8vw,100px);
+  line-height:0.92;color:var(--ink);
+  letter-spacing:-0.02em;
+}
+.hrow span em{font-style:italic;color:var(--gold3);}
+.hrow:nth-child(1) span{animation:wordrise 0.9s cubic-bezier(0.16,1,0.3,1) 0.85s both;}
+.hrow:nth-child(2) span{animation:wordrise 0.9s cubic-bezier(0.16,1,0.3,1) 1.0s both;}
+.hrow:nth-child(3) span{animation:wordrise 0.9s cubic-bezier(0.16,1,0.3,1) 1.15s both;}
+
+.s6-sep{
   width:0;height:1px;background:var(--gold);
-  animation:widen2 0.8s ease 1.5s forwards;
+  animation:widen2 0.9s ease 1.5s forwards;
   margin-bottom:36px;
 }
-@keyframes widen2{to{width:160px;}}
 
-/* Contact */
-#s5 .s5-cta{
+.s6-contact{
   text-align:center;
-  opacity:0;animation:fadein 0.7s ease 1.7s forwards;
+  opacity:0;animation:fadein 0.7s 1.8s forwards;
 }
-#s5 .s5-phone{
-  font-family:'Cormorant Garamond',serif;font-weight:300;
-  font-size:38px;letter-spacing:0.12em;color:var(--ink);
+.s6-phone{
+  font-family:'Cormorant Garamond',serif;
+  font-weight:300;
+  font-size:clamp(22px,4vw,44px);
+  letter-spacing:0.1em;color:var(--ink);
+  line-height:1;
 }
-#s5 .s5-site{
-  font-size:9px;letter-spacing:0.7em;color:var(--fog);text-transform:uppercase;margin-top:6px;
+.s6-domain{
+  font-family:'DM Mono',monospace;
+  font-size:9px;letter-spacing:0.7em;
+  color:var(--fog);text-transform:uppercase;
+  margin-top:8px;
 }
 
-/* Bottom bar */
-#s5 .s5-bar{
-  position:absolute;bottom:0;left:0;right:0;height:52px;
-  background:var(--ink);
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0 80px;
-  transform:translateY(100%);
-  animation:slideup-bar 0.55s cubic-bezier(0.16,1,0.3,1) 1.9s forwards;
+.s6-footnote{
+  position:absolute;bottom:clamp(16px,4%,52px);
+  left:0;right:0;
+  display:flex;align-items:center;justify-content:center;
+  gap:clamp(20px,5%,56px);
+  opacity:0;animation:fadein 0.6s 2.3s forwards;
 }
-@keyframes slideup-bar{to{transform:translateY(0);}}
-#s5 .s5-bar-l{font-size:9px;letter-spacing:0.45em;color:var(--fog);text-transform:uppercase;}
-#s5 .s5-bar-r{display:flex;align-items:center;gap:8px;}
-#s5 .s5-bar-dot{width:5px;height:5px;border-radius:50%;background:var(--gold);animation:pulse 2s ease-in-out infinite;}
-@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
-#s5 .s5-bar-txt{font-family:'DM Mono',monospace;font-size:9px;color:var(--gold2);letter-spacing:0.1em;}
+.fn-item{
+  font-family:'DM Mono',monospace;
+  font-size:8px;color:var(--fog2);
+  letter-spacing:0.3em;text-transform:uppercase;
+  display:flex;align-items:center;gap:8px;
+}
+.fn-item::before{
+  content:'';display:block;
+  width:4px;height:4px;border-radius:50%;
+  background:var(--gold);opacity:0.6;
+}
+
+
+/* SHARED ANIMATIONS */
+@keyframes fadein{from{opacity:0;}to{opacity:1;}}
+@keyframes wordrise{to{transform:translateY(0);opacity:1;}from{transform:translateY(105%);opacity:0;}}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
+@keyframes barslide{to{transform:scaleX(1);}}
+@keyframes numland{to{opacity:1;transform:scale(1) translateY(0);}}
+@keyframes dropland{to{opacity:1;transform:translateY(0);}}
+@keyframes slideup{to{opacity:1;transform:translateY(0);}}
+@keyframes linedown{to{height:100%;}}
+@keyframes widen{to{width:32px;}}
+@keyframes widen2{to{width:120px;}}
+@keyframes tallgrow{to{height:64px;}}
+
+/* RESPONSIVE */
+@media(max-width:700px){
+  .s3-left,.s3-right,.s4-left,.s4-right{position:relative;width:100%;padding:5% 6%;}
+  #s3,#s4{display:flex;flex-direction:column;justify-content:center;}
+  .s3-right{border-left:none;border-top:1px solid rgba(13,11,8,0.08);}
+  .s4-right{border-left:none;}
+  .s4-manifesto{text-align:left;}
+  .s4-wordmark{text-align:left;}
+  .s4-tagline{text-align:left;}
+  .s4-divider{display:none;}
+  .s5-phases{grid-template-columns:1fr;}
+  .phase{border-right:none;border-bottom:1px solid rgba(201,168,76,0.07);padding:24px 6%;}
+  .phase::before{display:none;}
+  .phase-num{font-size:clamp(40px,12vw,80px);}
+  .s6-headline .hrow span{font-size:clamp(36px,10vw,80px);}
+  .s5-header{padding:0 4%;}
+  .s6-footnote{flex-direction:column;gap:8px;}
+}
 </style>
 </head>
 <body>
 
 <div id="cursor"></div>
+<div id="prog"></div>
 
 <!-- GATE -->
 <div id="gate">
-  <svg class="g-compass" width="52" height="52" viewBox="0 0 44 44" fill="none">
-    <path d="M22 2 L27 19 L22 16 L17 19 Z" fill="#B8962E"/>
-    <path d="M42 22 L25 17 L28 22 L25 27 Z" fill="#8B6E1A"/>
-    <path d="M22 42 L17 25 L22 28 L27 25 Z" fill="#8B6E1A"/>
-    <path d="M2 22 L19 27 L16 22 L19 17 Z" fill="#D4AE4A"/>
-  </svg>
-  <div class="g-name">Northstar</div>
-  <div class="g-sub">Web Studio · Mumbai</div>
-  <button id="playBtn">Play</button>
+  <div class="gate-rule"></div>
+  <div class="gate-logo">Northstar</div>
+  <div class="gate-sub">Web Studio · Mumbai</div>
+  <button id="playBtn">▶ &nbsp; Play Film</button>
 </div>
 
-<!-- AD -->
-<div id="ad">
-  <canvas id="bg-canvas"></canvas>
-  <div id="prog"></div>
+<!-- STAGE -->
+<div id="stage">
+  <canvas id="particles"></canvas>
 
-  <!-- S1: THE LIVE CLOCK -->
+  <!-- S1: THE VOID -->
   <div class="scene" id="s1">
-    <div class="s1-top-bar">
-      <div class="s1-url">northstarweb.in / start-project</div>
-      <div class="s1-status">● Live now</div>
-    </div>
-    <div class="s1-copy">
-      <div class="s1-micro">Mumbai · Web Studio</div>
-      <div class="s1-heading">
-        <div class="reveal-word w1"><span>Right</span></div>&nbsp;
-        <div class="reveal-word w2"><span>now,</span></div><br>
-        <div class="reveal-word w3 italic-word"><span>someone</span></div>&nbsp;
-        <div class="reveal-word w4"><span>is</span></div>&nbsp;
-        <div class="reveal-word w5"><span>searching</span></div>&nbsp;
-        <div class="reveal-word w6"><span>for</span></div><br>
-        <div class="reveal-word w7 gold-word"><span>your business.</span></div>
+    <div class="s1-center">
+      <div class="s1-q">
+        <div class="line l1"><span>When did you last</span></div>
+        <div class="line l2"><span>lose a customer<span class="s1-cursor-blink"></span></span></div>
+        <div class="line l3"><span>you never even knew you had?</span></div>
       </div>
-      <p class="s1-sub">They won't find you. Not because your business isn't great — but because you have no website.</p>
-    </div>
-    <div class="clock-wrap">
-      <div class="clock-label">Time you've been offline</div>
-      <div class="clock-display" id="live-clock">00<span class="colon">:</span>00<span class="colon">:</span>00</div>
-      <div class="clock-sub">hh : mm : ss</div>
-    </div>
-    <div class="s1-data">
-      <div class="data-item"><span class="data-val">₹2,400</span> avg revenue lost per day, no website</div>
-      <div class="data-item"><span class="data-val">73%</span> of users distrust businesses without websites</div>
-      <div class="data-item"><span class="data-val">24hrs</span> to fix all of this</div>
+      <div class="s1-timestamp">Right now &nbsp;·&nbsp; Someone is searching &nbsp;·&nbsp; They won't find you</div>
     </div>
   </div>
 
-  <!-- S2: THE CONSEQUENCE -->
+  <!-- S2: THE HUNT -->
   <div class="scene" id="s2">
-    <div class="s2-gold-stripe"></div>
-    <div class="search-area">
-      <div class="search-label">What your next client sees</div>
-      <div class="search-bar">
-        <span class="search-icon">⌕</span>
-        <div class="search-text" id="search-typed"></div>
-        <div class="type-cursor"></div>
+    <div class="s2-context">
+      <div class="s2-dots">
+        <div class="s2-dot" style="background:rgba(255,80,80,0.3)"></div>
+        <div class="s2-dot" style="background:rgba(255,160,40,0.3)"></div>
+        <div class="s2-dot" style="background:rgba(80,180,80,0.3)"></div>
       </div>
-      <div class="search-result-area">
-        <div class="no-result">
-          <div class="nr-dot"></div>
-          <div class="nr-text">No results found for this business</div>
-          <div class="nr-instead">Showing alternatives instead →</div>
-        </div>
-        <div class="competitor-result">
-          <div class="cr-dot"></div>
-          <div class="cr-text">Your Competitor · Professional Web Services · Mumbai</div>
-          <div class="cr-link">Visit site →</div>
-        </div>
-      </div>
+      <div class="s2-url">google.com/search</div>
     </div>
-    <div class="consequence-label">
-      <div class="cl-main">They chose <em>someone else.</em></div>
-      <div class="cl-sub">This happens hundreds of times a day</div>
+    <div class="s2-body">
+      <div class="s2-search-col">
+        <div class="s2-eyebrow">What your next client sees right now</div>
+        <div class="s2-bar">
+          <div class="s2-bar-icon">⌕</div>
+          <div class="s2-bar-text"><span id="typed-text"></span><span class="s2-cursor"></span></div>
+        </div>
+        <div class="s2-results">
+          <div class="s2-result empty">
+            <div class="res-indicator empty"></div>
+            <div class="res-text">No results found for this business</div>
+            <div class="res-link" style="color:var(--fog);">—</div>
+          </div>
+          <div class="s2-result competitor">
+            <div class="res-indicator live"></div>
+            <div class="res-text live">Your Competitor · Premium Services · Mumbai</div>
+            <div class="res-link">Visit →</div>
+          </div>
+          <div class="s2-result competitor2">
+            <div class="res-indicator faded"></div>
+            <div class="res-text" style="color:var(--fog);">Another Competitor · Est. 2019 · Mumbai</div>
+            <div class="res-link" style="color:var(--fog2);">Visit →</div>
+          </div>
+        </div>
+        <div class="s2-verdict">
+          <div class="s2-verdict-main">They chose <em>someone else.</em></div>
+          <div class="s2-verdict-sub">This happens to you — hundreds of times — every day</div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- S3: NORTHSTAR ENTERS -->
+  <!-- S3: THE NUMBER -->
   <div class="scene" id="s3">
-    <div class="s3-rule"></div>
+    <div class="s3-bar-top"></div>
     <div class="s3-left">
-      <svg class="s3-compass" width="52" height="52" viewBox="0 0 44 44" fill="none">
-        <path d="M22 2 L27 19 L22 16 L17 19 Z" fill="#B8962E"/>
-        <path d="M42 22 L25 17 L28 22 L25 27 Z" fill="#8B6E1A"/>
-        <path d="M22 42 L17 25 L22 28 L27 25 Z" fill="#8B6E1A"/>
-        <path d="M2 22 L19 27 L16 22 L19 17 Z" fill="#D4AE4A"/>
-      </svg>
-      <div class="s3-name"><span>Northstar</span></div>
-      <div class="s3-web">Web Studio · Mumbai</div>
-      <p class="s3-verdict">We build websites for ambitious businesses who can't afford to wait. Brief to live — in one day.</p>
+      <div class="s3-label">The cost of no website</div>
+      <div class="s3-headline">
+        <div class="hline hl1"><span>Every hour</span></div>
+        <div class="hline hl2"><span>you are invisible,</span></div>
+        <div class="hline hl3"><span>you are losing.</span></div>
+      </div>
+      <div class="s3-body">
+        73% of customers research a business online before contacting them. Without a website, you don't exist. You are handing revenue to your competitors — politely, daily, invisibly.
+      </div>
+      <div class="s3-stat-row">
+        <div class="s3-stat">
+          <div class="s3-stat-n">73%</div>
+          <div class="s3-stat-l">distrust no-website businesses</div>
+        </div>
+        <div class="s3-stat">
+          <div class="s3-stat-n">8 sec</div>
+          <div class="s3-stat-l">before they move on</div>
+        </div>
+      </div>
     </div>
     <div class="s3-right">
-      <div class="s3-24">24</div>
-      <div class="s3-24-label">Hours. Brief to live.</div>
-      <div class="s3-promise">Not next month. Not next week. <em>Tomorrow morning,</em> your site is live and you are findable.</div>
+      <div class="s3-bignum">₹2,400</div>
+      <div class="s3-bignum-sub">Average · Per Day · Lost</div>
+      <div class="s3-bignum-desc">Revenue that walked past your door and into someone else's.</div>
     </div>
   </div>
 
-  <!-- S4: THE PROCESS -->
+  <!-- S4: THE ARRIVAL -->
   <div class="scene" id="s4">
-    <div class="s4-header">
-      <div class="s4-title">How a day with Northstar unfolds</div>
-      <div class="s4-live-timer" id="countdown-timer">24:00:00</div>
-    </div>
-    <div class="timeline">
-      <div class="tl-col">
-        <div class="tl-dot"></div>
-        <div class="tl-time">1</div>
-        <div class="tl-unit">Hour</div>
-        <div class="tl-rule"></div>
-        <div class="tl-name">Brief & Design Direction</div>
-        <div class="tl-desc">You share your goals, brand, and content. We lock the look and feel — no committees, no back-and-forth spirals. One session, one direction.</div>
-      </div>
-      <div class="tl-col">
-        <div class="tl-dot"></div>
-        <div class="tl-time">8</div>
-        <div class="tl-unit">Hours</div>
-        <div class="tl-rule"></div>
-        <div class="tl-name">Build & Development</div>
-        <div class="tl-desc">Our developers build fast, clean, and mobile-first. You get live previews as it takes shape. Blazing load speeds baked in from line one.</div>
-      </div>
-      <div class="tl-col">
-        <div class="tl-dot"></div>
-        <div class="tl-time">24</div>
-        <div class="tl-unit">Hours</div>
-        <div class="tl-rule"></div>
-        <div class="tl-name">Live. Done. Found.</div>
-        <div class="tl-desc">QA, DNS, launch. Your site is live. You are now findable. The client who would have chosen your competitor — finds you instead.</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- S5: THE CLOSE -->
-  <div class="scene" id="s5">
-    <div class="s5-top-rule"></div>
-    <div class="s5-content">
-      <div class="s5-logo">
-        <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
-          <path d="M22 2 L27 19 L22 16 L17 19 Z" fill="#B8962E"/>
-          <path d="M42 22 L25 17 L28 22 L25 27 Z" fill="#8B6E1A"/>
-          <path d="M22 42 L17 25 L22 28 L27 25 Z" fill="#8B6E1A"/>
-          <path d="M2 22 L19 27 L16 22 L19 17 Z" fill="#D4AE4A"/>
+    <div class="s4-grid-line-h"></div>
+    <div class="s4-grid-line-v"></div>
+    <div class="s4-left">
+      <div class="s4-compass-wrap">
+        <svg width="56" height="56" viewBox="0 0 44 44" fill="none">
+          <path d="M22 2 L27 19 L22 16 L17 19 Z" fill="#C9A84C"/>
+          <path d="M42 22 L25 17 L28 22 L25 27 Z" fill="#8B6820"/>
+          <path d="M22 42 L17 25 L22 28 L27 25 Z" fill="#8B6820"/>
+          <path d="M2 22 L19 27 L16 22 L19 17 Z" fill="#E8C97A"/>
         </svg>
-        <div>
-          <div class="s5-logoname">Northstar</div>
-          <div class="s5-logoweb">Web</div>
-        </div>
       </div>
-      <div class="s5-headline">
-        <div class="hl-row"><span>Your website.</span></div>
-        <div class="hl-row"><span>Tomorrow morning.</span></div>
-        <div class="hl-row"><span><em>Guaranteed.</em></span></div>
+      <div class="s4-wordmark">
+        <span class="s4-wordmark-inner">Northstar</span>
       </div>
-      <div class="s5-rule"></div>
-      <div class="s5-cta">
-        <div class="s5-phone">+91 77384 86780</div>
-        <div class="s5-site">northstarweb.in</div>
+      <div class="s4-tagline">Web Studio · Mumbai · India</div>
+      <div class="s4-manifesto">
+        We don't build websites.<br>
+        We build the version of your business<br>
+        that the world deserves to see.
       </div>
     </div>
-    <div class="s5-bar">
-      <div class="s5-bar-l">Mumbai · India · Northstar Web</div>
-      <div class="s5-bar-r">
-        <div class="s5-bar-dot"></div>
-        <div class="s5-bar-txt">Taking new clients now</div>
+    <div class="s4-right">
+      <div class="s4-divider"></div>
+      <div class="s4-promise-num">24</div>
+      <div class="s4-promise-label">Hours. Brief to live.</div>
+      <div class="s4-promise-copy">
+        Not a quote. Not a proposal. Not next month.<br>
+        <em>Tomorrow morning, you are found.</em>
       </div>
     </div>
   </div>
 
-</div>
+  <!-- S5: THE PROCESS -->
+  <div class="scene" id="s5">
+    <div class="s5-header">
+      <div class="s5-header-l">How your next 24 hours unfold</div>
+      <div class="s5-timer" id="s5-timer">24:00:00</div>
+    </div>
+    <div class="s5-phases">
+      <div class="phase">
+        <div class="phase-dot"></div>
+        <div class="phase-num">1</div>
+        <div class="phase-unit">Hour</div>
+        <div class="phase-rule"></div>
+        <div class="phase-name">Direction</div>
+        <div class="phase-desc">You share your vision. We lock the aesthetic, voice, and structure. One session. No committees. No revisions spiral. A direction so clear it feels obvious — in hindsight.</div>
+      </div>
+      <div class="phase">
+        <div class="phase-dot"></div>
+        <div class="phase-num">8</div>
+        <div class="phase-unit">Hours</div>
+        <div class="phase-rule"></div>
+        <div class="phase-name">Creation</div>
+        <div class="phase-desc">We build. Mobile-first. Lightning fast. Every pixel earns its place. You watch the site take shape through live previews. Speed is not compromise — it is discipline.</div>
+      </div>
+      <div class="phase">
+        <div class="phase-dot"></div>
+        <div class="phase-num">24</div>
+        <div class="phase-unit">Hours</div>
+        <div class="phase-rule"></div>
+        <div class="phase-name">Live. Found.</div>
+        <div class="phase-desc">QA, DNS, launch. Your site is live. You are found. The client who was searching for you — who found your competitor yesterday — finds you today. This is what 24 hours can change.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S6: THE CLOSE -->
+  <div class="scene" id="s6">
+    <div class="s6-top-rule"></div>
+    <div class="s6-bottom-rule"></div>
+    <div class="s6-content">
+      <div class="s6-pre">Northstar Web · Mumbai</div>
+      <div class="s6-logo">
+        <svg width="40" height="40" viewBox="0 0 44 44" fill="none">
+          <path d="M22 2 L27 19 L22 16 L17 19 Z" fill="#C9A84C"/>
+          <path d="M42 22 L25 17 L28 22 L25 27 Z" fill="#8B6820"/>
+          <path d="M22 42 L17 25 L22 28 L27 25 Z" fill="#8B6820"/>
+          <path d="M2 22 L19 27 L16 22 L19 17 Z" fill="#E8C97A"/>
+        </svg>
+        <div class="s6-logoname">Northstar</div>
+      </div>
+      <div class="s6-headline">
+        <div class="hrow"><span>Your website.</span></div>
+        <div class="hrow"><span>Tomorrow morning.</span></div>
+        <div class="hrow"><span><em>Guaranteed.</em></span></div>
+      </div>
+      <div class="s6-sep"></div>
+      <div class="s6-contact">
+        <div class="s6-phone">+91 77384 86780</div>
+        <div class="s6-domain">northstarweb.in</div>
+      </div>
+    </div>
+    <div class="s6-footnote">
+      <div class="fn-item">Taking new clients now</div>
+      <div class="fn-item">₹5,000 starter · 24hr turnaround</div>
+      <div class="fn-item">Mumbai · India</div>
+    </div>
+  </div>
+
+</div><!-- end stage -->
 
 <script>
-/* ── Cursor ── */
-const cur = document.getElementById('cursor');
-document.addEventListener('mousemove', e=>{
-  cur.style.left = e.clientX+'px';
-  cur.style.top  = e.clientY+'px';
+/* ─── CURSOR ─── */
+const curEl = document.getElementById('cursor');
+document.addEventListener('mousemove', e => {
+  curEl.style.left = e.clientX + 'px';
+  curEl.style.top  = e.clientY + 'px';
 });
+document.addEventListener('mousedown', () => curEl.classList.add('big'));
+document.addEventListener('mouseup',   () => curEl.classList.remove('big'));
 
-/* ── Live clock (S1) ── */
-let clockStart = null;
-function updateClock(ts){
-  if(!clockStart) return;
-  const elapsed = Math.floor((ts - clockStart)/1000);
-  const h = String(Math.floor(elapsed/3600)).padStart(2,'0');
-  const m = String(Math.floor((elapsed%3600)/60)).padStart(2,'0');
-  const s = String(elapsed%60).padStart(2,'0');
-  const el = document.getElementById('live-clock');
-  if(el) el.innerHTML = `${h}<span class="colon">:</span>${m}<span class="colon">:</span>${s}`;
-}
+/* ─── PARTICLES ─── */
+const pc = document.getElementById('particles');
+function resizePC() { pc.width = window.innerWidth; pc.height = window.innerHeight; }
+resizePC();
+window.addEventListener('resize', resizePC);
+const pctx = pc.getContext('2d');
 
-/* ── Countdown timer (S4) ── */
-function updateCountdown(sceneStart, ts){
-  if(!sceneStart) return;
-  const remaining = Math.max(0, 86400 - Math.floor((ts - sceneStart)/1000));
-  const h = String(Math.floor(remaining/3600)).padStart(2,'0');
-  const m = String(Math.floor((remaining%3600)/60)).padStart(2,'0');
-  const s = String(remaining%60).padStart(2,'0');
-  const el = document.getElementById('countdown-timer');
-  if(el) el.textContent = `${h}:${m}:${s}`;
-}
-
-/* ── Typewriter (S2) ── */
-function startTypewriter(){
-  const el = document.getElementById('search-typed');
-  if(!el) return;
-  const text = 'best web agency mumbai near me';
-  let i=0;
-  el.textContent='';
-  const iv = setInterval(()=>{
-    if(i<text.length){ el.textContent += text[i]; i++; }
-    else clearInterval(iv);
-  }, 60);
-}
-
-/* ── Background canvas (subtle floating orbs) ── */
-const bgC = document.getElementById('bg-canvas');
-bgC.width=1280; bgC.height=720;
-const bgCtx = bgC.getContext('2d');
-const orbs = Array.from({length:5},(_,i)=>({
-  x:200+i*220, y:150+i*80,
-  vx:(Math.random()-0.5)*0.2, vy:(Math.random()-0.5)*0.15,
-  r:80+i*30
+const particles = Array.from({length: 60}, () => ({
+  x: Math.random() * pc.width,
+  y: Math.random() * pc.height,
+  vx: (Math.random() - 0.5) * 0.18,
+  vy: (Math.random() - 0.5) * 0.14,
+  size: Math.random() * 1.2 + 0.3,
+  opacity: Math.random() * 0.25 + 0.05,
+  color: Math.random() > 0.6 ? '#C9A84C' : '#F2EDE4'
 }));
-function drawBg(){
-  bgCtx.clearRect(0,0,1280,720);
-  orbs.forEach(o=>{
-    o.x+=o.vx; o.y+=o.vy;
-    if(o.x<-o.r||o.x>1280+o.r)o.vx*=-1;
-    if(o.y<-o.r||o.y>720+o.r)o.vy*=-1;
-    const grad=bgCtx.createRadialGradient(o.x,o.y,0,o.x,o.y,o.r);
-    grad.addColorStop(0,'rgba(184,150,46,0.025)');
-    grad.addColorStop(1,'transparent');
-    bgCtx.beginPath(); bgCtx.arc(o.x,o.y,o.r,0,Math.PI*2);
-    bgCtx.fillStyle=grad; bgCtx.fill();
+
+function drawParticles() {
+  pctx.clearRect(0, 0, pc.width, pc.height);
+  particles.forEach(p => {
+    p.x += p.vx; p.y += p.vy;
+    if (p.x < 0) p.x = pc.width;
+    if (p.x > pc.width) p.x = 0;
+    if (p.y < 0) p.y = pc.height;
+    if (p.y > pc.height) p.y = 0;
+    pctx.beginPath();
+    pctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    pctx.fillStyle = p.color;
+    pctx.globalAlpha = p.opacity;
+    pctx.fill();
   });
-  requestAnimationFrame(drawBg);
+  pctx.globalAlpha = 1;
+  requestAnimationFrame(drawParticles);
 }
-drawBg();
+drawParticles();
 
-/* ── Audio ── */
-let ac;
-function initAudio(){ ac = new(window.AudioContext||window.webkitAudioContext)(); }
+/* ─── TYPEWRITER (S2) ─── */
+function startTyping() {
+  const el = document.getElementById('typed-text');
+  if (!el) return;
+  const text = 'best web designer mumbai near me';
+  let i = 0;
+  el.textContent = '';
+  const iv = setInterval(() => {
+    if (i < text.length) { el.textContent += text[i]; i++; }
+    else clearInterval(iv);
+  }, 55);
+}
 
-function G(v){ const g=ac.createGain(); g.gain.value=v; g.connect(ac.destination); return g; }
+/* ─── S5 COUNTDOWN TIMER ─── */
+let s5StartTime = null;
+function updateS5Timer(now) {
+  if (!s5StartTime) return;
+  const elapsed = Math.floor((now - s5StartTime) / 1000);
+  const remaining = Math.max(0, 86400 - elapsed);
+  const h = String(Math.floor(remaining / 3600)).padStart(2, '0');
+  const m = String(Math.floor((remaining % 3600) / 60)).padStart(2, '0');
+  const s = String(remaining % 60).padStart(2, '0');
+  const el = document.getElementById('s5-timer');
+  if (el) el.textContent = `${h}:${m}:${s}`;
+}
 
-function pad(freqs,t,dur,vol,type){
-  const g=G(0); const now=ac.currentTime;
-  freqs.forEach(f=>{
-    const o=ac.createOscillator(),lg=ac.createGain();
-    o.type=type||'sine'; o.frequency.value=f;
-    lg.gain.value=0.8/freqs.length;
-    o.connect(lg); lg.connect(g);
-    o.start(now+t); o.stop(now+t+dur+1);
+/* ─── AUDIO ENGINE ─── */
+let AC;
+function initAudio() {
+  AC = new (window.AudioContext || window.webkitAudioContext)();
+}
+
+function osc(type, freq, t, dur, vol, dest) {
+  const o = AC.createOscillator();
+  const g = AC.createGain();
+  o.type = type;
+  o.frequency.value = freq;
+  o.connect(g);
+  g.connect(dest || AC.destination);
+  const now = AC.currentTime;
+  g.gain.setValueAtTime(0, now + t);
+  g.gain.linearRampToValueAtTime(vol, now + t + Math.min(0.08, dur * 0.1));
+  g.gain.setValueAtTime(vol, now + t + dur - 0.08);
+  g.gain.linearRampToValueAtTime(0, now + t + dur);
+  o.start(now + t);
+  o.stop(now + t + dur + 0.05);
+}
+
+function tone(freq, t, dur, vol) {
+  osc('sine', freq, t, dur, vol);
+}
+
+function pad(freqs, t, dur, vol) {
+  const master = AC.createGain();
+  const filter = AC.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.value = 1200;
+  master.connect(filter);
+  filter.connect(AC.destination);
+  master.gain.setValueAtTime(0, AC.currentTime + t);
+  master.gain.linearRampToValueAtTime(vol, AC.currentTime + t + 1.5);
+  master.gain.setValueAtTime(vol, AC.currentTime + t + dur - 1.5);
+  master.gain.linearRampToValueAtTime(0, AC.currentTime + t + dur);
+  freqs.forEach(f => osc('sine', f, t, dur, 0.7 / freqs.length, master));
+}
+
+function pluck(freq, t, vol) {
+  const now = AC.currentTime;
+  const o = AC.createOscillator();
+  const g = AC.createGain();
+  const f = AC.createBiquadFilter();
+  f.type = 'lowpass'; f.frequency.value = 3000;
+  o.type = 'triangle'; o.frequency.value = freq;
+  o.connect(f); f.connect(g); g.connect(AC.destination);
+  g.gain.setValueAtTime(0, now + t);
+  g.gain.linearRampToValueAtTime(vol, now + t + 0.006);
+  g.gain.exponentialRampToValueAtTime(0.001, now + t + 3.2);
+  o.start(now + t); o.stop(now + t + 3.5);
+}
+
+function bell(freq, t, vol) {
+  const now = AC.currentTime;
+  [1, 2.756, 5.404].forEach((ratio, i) => {
+    const o = AC.createOscillator();
+    const g = AC.createGain();
+    o.type = 'sine'; o.frequency.value = freq * ratio;
+    o.connect(g); g.connect(AC.destination);
+    const v = vol / (i + 1);
+    g.gain.setValueAtTime(0, now + t);
+    g.gain.linearRampToValueAtTime(v, now + t + 0.005);
+    g.gain.exponentialRampToValueAtTime(0.001, now + t + 3.5 - i * 0.4);
+    o.start(now + t); o.stop(now + t + 4);
   });
-  g.gain.setValueAtTime(0,now+t);
-  g.gain.linearRampToValueAtTime(vol,now+t+1.2);
-  g.gain.setValueAtTime(vol,now+t+dur-1.2);
-  g.gain.linearRampToValueAtTime(0,now+t+dur);
-}
-function pluck(f,t,v){
-  const now=ac.currentTime; const o=ac.createOscillator(),g=G(0);
-  const flt=ac.createBiquadFilter(); flt.type='lowpass'; flt.frequency.value=2800;
-  o.type='triangle'; o.frequency.value=f;
-  o.connect(flt); flt.connect(g.gain?g:ac.destination);
-  const gg=ac.createGain();
-  o.disconnect(); o.connect(flt); flt.connect(gg); gg.connect(ac.destination);
-  gg.gain.setValueAtTime(0,now+t);
-  gg.gain.linearRampToValueAtTime(v,now+t+0.008);
-  gg.gain.exponentialRampToValueAtTime(0.001,now+t+2.5);
-  o.start(now+t); o.stop(now+t+3);
-}
-function bell(f,t,v){
-  const now=ac.currentTime; const o=ac.createOscillator(),g=ac.createGain();
-  o.type='sine'; o.frequency.value=f;
-  o.connect(g); g.connect(ac.destination);
-  g.gain.setValueAtTime(0,now+t);
-  g.gain.linearRampToValueAtTime(v,now+t+0.008);
-  g.gain.exponentialRampToValueAtTime(0.001,now+t+3.5);
-  o.start(now+t); o.stop(now+t+4);
-}
-function kick(t){
-  const now=ac.currentTime; const o=ac.createOscillator(),g=ac.createGain();
-  o.type='sine';
-  o.frequency.setValueAtTime(100,now+t);
-  o.frequency.exponentialRampToValueAtTime(38,now+t+0.15);
-  g.gain.setValueAtTime(0.2,now+t);
-  g.gain.exponentialRampToValueAtTime(0.001,now+t+0.25);
-  o.connect(g); g.connect(ac.destination);
-  o.start(now+t); o.stop(now+t+0.3);
-}
-function hat(t,v){
-  const now=ac.currentTime;
-  const buf=ac.createBuffer(1,Math.floor(ac.sampleRate*0.04),ac.sampleRate);
-  const d=buf.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
-  const s=ac.createBufferSource(); s.buffer=buf;
-  const f=ac.createBiquadFilter(); f.type='highpass'; f.frequency.value=9000;
-  const g=ac.createGain();
-  s.connect(f); f.connect(g); g.connect(ac.destination);
-  g.gain.setValueAtTime(v||0.028,now+t);
-  g.gain.exponentialRampToValueAtTime(0.001,now+t+0.04);
-  s.start(now+t); s.stop(now+t+0.06);
-}
-function bass(f,t,dur,v){
-  const now=ac.currentTime; const o=ac.createOscillator();
-  const flt=ac.createBiquadFilter(); flt.type='lowpass'; flt.frequency.value=220;
-  const g=ac.createGain();
-  o.type='sawtooth'; o.frequency.value=f;
-  o.connect(flt); flt.connect(g); g.connect(ac.destination);
-  g.gain.setValueAtTime(0,now+t);
-  g.gain.linearRampToValueAtTime(v,now+t+0.02);
-  g.gain.setValueAtTime(v,now+t+dur-0.06);
-  g.gain.linearRampToValueAtTime(0,now+t+dur);
-  o.start(now+t); o.stop(now+t+dur+0.1);
-}
-function riser(t,dur){
-  const now=ac.currentTime; const o=ac.createOscillator(),g=ac.createGain();
-  const f=ac.createBiquadFilter(); f.type='lowpass';
-  f.frequency.setValueAtTime(300,now+t);
-  f.frequency.exponentialRampToValueAtTime(5000,now+t+dur);
-  o.type='sawtooth'; o.frequency.value=41;
-  o.connect(f); f.connect(g); g.connect(ac.destination);
-  g.gain.setValueAtTime(0,now+t);
-  g.gain.linearRampToValueAtTime(0.07,now+t+dur*0.6);
-  g.gain.exponentialRampToValueAtTime(0.001,now+t+dur);
-  o.start(now+t); o.stop(now+t+dur+0.1);
 }
 
-function playScore(){
-  /* S1 0-7s: Cinematic dread. Sparse. Clock ticking. */
-  pad([41,55,82],0,7,0.06);
-  bell(880,0.4,0.04); bell(1109,1.6,0.035); bell(1319,3.1,0.04); bell(880,5,0.03);
-  pluck(440,0.6,0.04); pluck(554,2.2,0.035); pluck(659,4.0,0.04);
-  // Heartbeat-like ticks
-  [1,2,3,4,5,6].forEach(t=>{ kick(t-0.02); });
-
-  /* S2 7-13s: Tension tightens. Minor. */
-  pad([37,55,82],7,6,0.07);
-  for(let i=0;i<6;i++){ kick(7+i); hat(7+i+0.5,0.02); }
-  bass(37,7,1.5,0.1); bass(37,9,1.5,0.1); bass(41,11,2,0.09);
-  [294,330,370,415,370,330].forEach((f,i)=>pluck(f,8+i*0.65,0.04));
-  riser(11.5,1.5);
-
-  /* S3 13-20s: THE DROP. Brand arrives. Relief and power. */
-  kick(13); kick(13.06);
-  pad([55,82,110,165],13.5,6.5,0.1);
-  pad([165,220,275,330],14,6,0.06);
-  [659,880,1109,1319,1760].forEach((f,i)=>bell(f,13.8+i*0.2,0.07-i*0.009));
-  for(let i=0;i<6;i+=0.5){ kick(14+i); hat(14+i+0.25,0.03); }
-  [41,41,55,41,55,55,82,55].forEach((f,i)=>bass(f,14+i*0.5,0.45,0.14));
-  [523,659,784,1047,1319,1047,784].forEach((f,i)=>pluck(f,15+i*0.4,0.07));
-  [440,554,659,880,1047].forEach((f,i)=>pluck(f,17.5+i*0.35,0.06));
-
-  /* S4 20-27s: Purposeful. Confident rhythm. */
-  pad([41,55,82,110],20,7,0.08);
-  for(let i=0;i<7;i++){ kick(20+i); hat(20+i+0.5,0.025); hat(20+i+0.25,0.015); }
-  [41,41,55,41,55,49,55,41,55,55,82,55,65,55].forEach((f,i)=>bass(f,20+i*0.5,0.46,0.13));
-  [330,415,494,587,740,587,494,415,
-   370,466,587,740,880,740,587,466].forEach((f,i)=>pluck(f,20.5+i*0.38,0.055));
-
-  /* S5 27-36s: Resolution. Gold. Warm. Earned. */
-  pad([55,82,110,138,165,220],27,9,0.12);
-  pad([220,277,330,415,554],27.5,8.5,0.06);
-  [659,880,1047,1319,1760].forEach((f,i)=>bell(f,27.2+i*0.18,0.08-i*0.01));
-  for(let i=0;i<6;i++){ kick(28+i); hat(28+i+0.5,0.02*(1-i/10)); }
-  [55,55,82,55,82,82,110,82].forEach((f,i)=>bass(f,28+i*0.5,0.48,0.11));
-  [523,659,784,880,1047,880,784,659].forEach((f,i)=>pluck(f,29+i*0.5,0.065));
-  [880,1109,1319,1760].forEach((f,i)=>bell(f,32+i*0.35,0.055));
+function kick(t) {
+  const now = AC.currentTime;
+  const o = AC.createOscillator();
+  const g = AC.createGain();
+  o.type = 'sine';
+  o.frequency.setValueAtTime(90, now + t);
+  o.frequency.exponentialRampToValueAtTime(30, now + t + 0.18);
+  g.gain.setValueAtTime(0.22, now + t);
+  g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.28);
+  o.connect(g); g.connect(AC.destination);
+  o.start(now + t); o.stop(now + t + 0.35);
 }
 
-/* ── Scene engine ── */
-const SCENES = ['s1','s2','s3','s4','s5'];
-const DURS   = [7000,6000,7000,7000,9000];
-const TOTAL  = DURS.reduce((a,b)=>a+b,0);
-let cur=0, startTS=null, s4Start=null;
+function hat(t, vol) {
+  const now = AC.currentTime;
+  const buf = AC.createBuffer(1, Math.floor(AC.sampleRate * 0.05), AC.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  const s = AC.createBufferSource(); s.buffer = buf;
+  const f = AC.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = 10000;
+  const g = AC.createGain();
+  s.connect(f); f.connect(g); g.connect(AC.destination);
+  g.gain.setValueAtTime(vol || 0.025, now + t);
+  g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.04);
+  s.start(now + t); s.stop(now + t + 0.06);
+}
+
+function bass(freq, t, dur, vol) {
+  const now = AC.currentTime;
+  const o = AC.createOscillator();
+  const f = AC.createBiquadFilter();
+  f.type = 'lowpass'; f.frequency.value = 200;
+  const g = AC.createGain();
+  o.type = 'sawtooth'; o.frequency.value = freq;
+  o.connect(f); f.connect(g); g.connect(AC.destination);
+  g.gain.setValueAtTime(0, now + t);
+  g.gain.linearRampToValueAtTime(vol, now + t + 0.02);
+  g.gain.setValueAtTime(vol, now + t + dur - 0.05);
+  g.gain.linearRampToValueAtTime(0, now + t + dur);
+  o.start(now + t); o.stop(now + t + dur + 0.1);
+}
+
+function riser(t, dur) {
+  const now = AC.currentTime;
+  const o = AC.createOscillator();
+  const g = AC.createGain();
+  const f = AC.createBiquadFilter();
+  f.type = 'lowpass';
+  f.frequency.setValueAtTime(200, now + t);
+  f.frequency.exponentialRampToValueAtTime(6000, now + t + dur);
+  o.type = 'sawtooth'; o.frequency.value = 38;
+  o.connect(f); f.connect(g); g.connect(AC.destination);
+  g.gain.setValueAtTime(0, now + t);
+  g.gain.linearRampToValueAtTime(0.06, now + t + dur * 0.7);
+  g.gain.exponentialRampToValueAtTime(0.001, now + t + dur);
+  o.start(now + t); o.stop(now + t + dur + 0.1);
+}
+
+function playScore() {
+  /* ── S1 (0–5s): Void. One drone. Barely breathing. ── */
+  pad([41, 55], 0, 5, 0.05);
+  bell(440, 0.3, 0.035);
+  bell(554, 2.1, 0.03);
+  pluck(330, 0.8, 0.03);
+  pluck(415, 3.2, 0.025);
+  [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5].forEach(t => {
+    if (Math.random() > 0.4) hat(t, 0.012);
+  });
+
+  /* ── S2 (5–11s): Unease builds. Minor. Sparse rhythm. ── */
+  pad([36, 54, 81], 5, 6, 0.065);
+  [5, 6, 7, 8, 9, 10].forEach(t => kick(t));
+  [5, 6, 7, 8, 9, 10].forEach(t => hat(t + 0.5, 0.018));
+  bass(36, 5, 1.8, 0.09); bass(36, 7, 1.8, 0.09); bass(43, 9, 2, 0.08);
+  [294, 330, 370, 330, 277, 294].forEach((f, i) => pluck(f, 6 + i * 0.7, 0.035));
+  riser(9.5, 1.5);
+  bell(220, 9.8, 0.04);
+
+  /* ── S3 (11–17s): Dark sustain. Cost lands. ── */
+  pad([41, 55, 82], 11, 6, 0.07);
+  [11, 12, 13, 14, 15, 16].forEach(t => kick(t));
+  [11, 12, 13, 14, 15, 16].forEach(t => hat(t + 0.5, 0.02));
+  bass(41, 11, 1.5, 0.1); bass(41, 12.5, 1.5, 0.1); bass(36, 14, 3, 0.09);
+  bell(659, 11.3, 0.04); bell(554, 13.1, 0.035); bell(494, 15.2, 0.03);
+  [370, 330, 277, 247].forEach((f, i) => pluck(f, 12 + i * 0.9, 0.04));
+  riser(15.5, 1.5);
+
+  /* ── S4 (17–24s): THE DROP. Brand arrives. Power. ── */
+  kick(17); kick(17.05); kick(17.1);
+  pad([55, 82, 110, 165], 17.3, 6.7, 0.11);
+  pad([165, 220, 330], 17.8, 6.2, 0.07);
+  [659, 880, 1109, 1319, 1760, 2093].forEach((f, i) => bell(f, 17.5 + i * 0.16, 0.08 - i * 0.01));
+  for (let i = 0; i < 6.5; i += 0.5) { kick(18 + i); hat(18 + i + 0.25, 0.028); }
+  [55, 55, 82, 55, 82, 82, 110, 82, 55, 82, 110, 82, 55].forEach((f, i) => bass(f, 18 + i * 0.48, 0.45, 0.14));
+  [523, 659, 784, 1047, 1319, 1047, 784, 659, 523].forEach((f, i) => pluck(f, 19 + i * 0.38, 0.075));
+  [880, 1109, 1319, 1760, 1319].forEach((f, i) => pluck(f, 21 + i * 0.3, 0.065));
+
+  /* ── S5 (24–31s): Purposeful. Confident. Forward march. ── */
+  pad([41, 55, 82, 110, 138], 24, 7, 0.09);
+  for (let i = 0; i < 7; i++) { kick(24 + i); hat(24 + i + 0.5, 0.022); hat(24 + i + 0.25, 0.012); }
+  [55, 55, 82, 55, 82, 82, 110, 55, 82, 110, 82, 55, 110, 82].forEach((f, i) => bass(f, 24 + i * 0.5, 0.47, 0.13));
+  [330, 415, 494, 587, 740, 880, 740, 587, 494, 415, 330, 415, 494, 587, 740].forEach((f, i) => pluck(f, 24.5 + i * 0.4, 0.058));
+
+  /* ── S6 (31–42s): Gold. Resolution. Earned silence. ── */
+  pad([55, 82, 110, 138, 165, 220, 277], 31, 11, 0.13);
+  pad([220, 277, 330, 415, 554], 31.5, 10.5, 0.065);
+  [659, 880, 1047, 1319, 1760, 2093].forEach((f, i) => bell(f, 31.2 + i * 0.17, 0.09 - i * 0.01));
+  for (let i = 0; i < 5; i++) { kick(32 + i); hat(32 + i + 0.5, 0.018 * (1 - i / 8)); }
+  [55, 82, 55, 110, 82, 55].forEach((f, i) => bass(f, 32 + i * 0.55, 0.52, 0.1));
+  [523, 659, 784, 880, 1047, 1319, 1047, 880].forEach((f, i) => pluck(f, 33 + i * 0.55, 0.07));
+  [1047, 1319, 1760, 2093].forEach((f, i) => bell(f, 36 + i * 0.4, 0.06));
+  [880, 1109, 1319].forEach((f, i) => bell(f, 38 + i * 0.5, 0.055));
+  bell(1760, 40, 0.07);
+  bell(2093, 41, 0.065);
+}
+
+/* ─── SCENE ENGINE ─── */
+const SCENE_IDS = ['s1', 's2', 's3', 's4', 's5', 's6'];
+const DURATIONS  = [5000, 6000, 6000, 7000, 7000, 11000];
+const TOTAL = DURATIONS.reduce((a, b) => a + b, 0);
+
+let currentScene = 0;
+let startTS = null;
 const progEl = document.getElementById('prog');
 
-function showScene(i){
-  SCENES.forEach((id,j)=>{
+function activateScene(idx) {
+  SCENE_IDS.forEach((id, i) => {
     const el = document.getElementById(id);
-    el.style.display = j===i ? 'block' : 'none';
-    el.classList.toggle('active', j===i);
-  });
-  if(i===1) setTimeout(startTypewriter, 800);
-  if(i===3){ s4Start = performance.now(); }
-}
-
-// Hard cut between scenes — no fade. This is a director's choice.
-// Cuts are more gripping than fades. Fades are PowerPoint.
-function tick(ts){
-  if(!startTS){ startTS=ts; clockStart=ts; }
-  const elapsed = ts - startTS;
-  progEl.style.width = Math.min(elapsed/TOTAL*100,100)+'%';
-  updateClock(ts);
-  if(cur===3) updateCountdown(s4Start, ts);
-
-  let acc=0;
-  for(let i=0;i<DURS.length;i++){
-    acc+=DURS[i];
-    if(elapsed<acc){
-      if(i!==cur){ cur=i; showScene(cur); }
-      break;
+    el.classList.remove('active', 'in', 'out');
+    if (i === idx) {
+      el.style.display = 'block';
+      // Force reflow
+      void el.offsetWidth;
+      el.classList.add('active', 'in');
+    } else {
+      el.style.display = 'none';
     }
-  }
-  if(elapsed < TOTAL+500) requestAnimationFrame(tick);
-  else setTimeout(()=>{ cur=0; startTS=null; showScene(0); requestAnimationFrame(tick); }, 1500);
+  });
+
+  if (idx === 1) setTimeout(startTyping, 600);
+  if (idx === 4) s5StartTime = performance.now();
 }
 
-document.getElementById('playBtn').addEventListener('click',()=>{
-  initAudio(); playScore();
-  document.getElementById('gate').style.display='none';
-  document.getElementById('ad').style.display='block';
-  showScene(0);
-  requestAnimationFrame(tick);
+function loop(ts) {
+  if (!startTS) startTS = ts;
+  const elapsed = ts - startTS;
+
+  progEl.style.width = Math.min(elapsed / TOTAL * 100, 100) + '%';
+  if (s5StartTime) updateS5Timer(ts);
+
+  let acc = 0;
+  let newScene = currentScene;
+  for (let i = 0; i < DURATIONS.length; i++) {
+    acc += DURATIONS[i];
+    if (elapsed < acc) { newScene = i; break; }
+    if (i === DURATIONS.length - 1) newScene = DURATIONS.length - 1;
+  }
+
+  if (newScene !== currentScene) {
+    currentScene = newScene;
+    activateScene(currentScene);
+  }
+
+  if (elapsed < TOTAL + 800) {
+    requestAnimationFrame(loop);
+  } else {
+    setTimeout(() => {
+      currentScene = 0;
+      startTS = null;
+      s5StartTime = null;
+      activateScene(0);
+      requestAnimationFrame(loop);
+    }, 1400);
+  }
+}
+
+/* ─── PLAY ─── */
+document.getElementById('playBtn').addEventListener('click', () => {
+  initAudio();
+  playScore();
+  document.getElementById('gate').style.display = 'none';
+  document.getElementById('stage').style.display = 'block';
+  activateScene(0);
+  requestAnimationFrame(loop);
 });
 </script>
 </body>
