@@ -1,1 +1,986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Northstar — The Clock</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;0,700;1,300;1,600&family=Tenor+Sans&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --cream:#F4F0E8;
+  --gold:#B8962E;
+  --gold2:#D4AE4A;
+  --gold3:#8B6E1A;
+  --ink:#16120E;
+  --ink2:#2A241C;
+  --fog:#7A7268;
+  --fog2:#C0BAB0;
+}
+html,body{
+  width:1280px;height:720px;overflow:hidden;
+  background:#000;
+  font-family:'Tenor Sans',sans-serif;
+  cursor:none;
+}
 
+/* ── CUSTOM CURSOR ── */
+#cursor{
+  position:fixed;width:8px;height:8px;
+  background:var(--gold);border-radius:50%;
+  pointer-events:none;z-index:10000;
+  transform:translate(-50%,-50%);
+  transition:transform 0.1s ease;
+}
+
+/* ══ GATE ══ */
+#gate{
+  position:fixed;inset:0;background:var(--ink);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  z-index:9999;
+}
+#gate .g-compass{margin-bottom:28px;animation:spin-slow 12s linear infinite;}
+@keyframes spin-slow{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+#gate .g-name{
+  font-family:'Cormorant Garamond',serif;font-weight:300;
+  font-size:48px;letter-spacing:0.1em;color:var(--cream);
+  margin-bottom:4px;
+}
+#gate .g-sub{font-size:9px;letter-spacing:0.8em;color:var(--gold);text-transform:uppercase;margin-bottom:40px;}
+#playBtn{
+  font-family:'Tenor Sans',sans-serif;
+  font-size:10px;letter-spacing:0.6em;text-transform:uppercase;
+  color:var(--gold2);background:transparent;
+  border:1px solid var(--gold3);padding:14px 48px;cursor:pointer;
+  transition:all 0.25s;
+}
+#playBtn:hover{background:var(--gold);color:var(--ink);border-color:var(--gold);}
+
+/* ══ SHELL ══ */
+#ad{position:relative;width:1280px;height:720px;overflow:hidden;display:none;background:var(--ink);}
+#prog{position:fixed;bottom:0;left:0;height:2px;background:var(--gold2);width:0%;z-index:999;transition:none;}
+
+/* ══ GLOBAL CANVAS (always on) ══ */
+#bg-canvas{position:absolute;inset:0;z-index:0;}
+
+/* ══ SCENES ══ */
+.scene{position:absolute;inset:0;z-index:1;pointer-events:none;display:none;}
+.scene.active{display:block;}
+
+/* ════════════════════════════════════════
+   S1: THE LIVE CLOCK  (0–7s)
+   Opens in media res. A client is searching.
+   A ticking clock. You have no website.
+════════════════════════════════════════ */
+#s1{background:var(--ink);}
+
+#s1 .s1-top-bar{
+  position:absolute;top:0;left:0;right:0;height:48px;
+  border-bottom:1px solid rgba(184,150,46,0.15);
+  display:flex;align-items:center;padding:0 56px;
+  justify-content:space-between;
+}
+#s1 .s1-url{font-family:'DM Mono',monospace;font-size:11px;color:var(--fog);letter-spacing:0.04em;}
+#s1 .s1-status{font-family:'DM Mono',monospace;font-size:10px;color:var(--gold3);letter-spacing:0.04em;}
+
+/* The main clock */
+#s1 .clock-wrap{
+  position:absolute;
+  right:80px;top:50%;transform:translateY(-50%);
+  text-align:right;
+}
+#s1 .clock-label{
+  font-size:9px;letter-spacing:0.7em;color:var(--gold3);text-transform:uppercase;
+  margin-bottom:6px;
+  opacity:0;animation:fadein 0.5s ease 0.3s forwards;
+}
+#s1 .clock-display{
+  font-family:'Cormorant Garamond',serif;font-weight:300;
+  font-size:160px;line-height:1;letter-spacing:-0.04em;
+  color:var(--cream);
+  opacity:0;animation:fadein 0.6s ease 0.4s forwards;
+}
+#s1 .clock-display .colon{
+  display:inline-block;
+  animation:blink 1s step-start infinite;
+  color:var(--gold);
+}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
+#s1 .clock-sub{
+  font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.15em;
+  color:var(--fog);margin-top:4px;
+  opacity:0;animation:fadein 0.5s ease 0.7s forwards;
+}
+
+/* Left text block */
+#s1 .s1-copy{
+  position:absolute;left:80px;top:50%;transform:translateY(-50%);
+  max-width:560px;
+}
+.s1-micro{
+  font-size:9px;letter-spacing:0.7em;color:var(--gold3);text-transform:uppercase;
+  margin-bottom:20px;
+  opacity:0;animation:fadein 0.5s ease 0.2s forwards;
+}
+.s1-heading{
+  font-family:'Cormorant Garamond',serif;
+  font-weight:300;font-size:68px;line-height:1;
+  color:var(--cream);letter-spacing:-0.01em;
+}
+.s1-heading .reveal-word{
+  display:inline-block;overflow:hidden;
+  vertical-align:bottom;
+}
+.s1-heading .reveal-word span{
+  display:inline-block;
+  transform:translateY(100%);opacity:0;
+}
+/* each word animates in */
+.s1-heading .w1 span{animation:wordrise 0.7s cubic-bezier(0.16,1,0.3,1) 0.3s forwards;}
+.s1-heading .w2 span{animation:wordrise 0.7s cubic-bezier(0.16,1,0.3,1) 0.46s forwards;}
+.s1-heading .w3 span{animation:wordrise 0.7s cubic-bezier(0.16,1,0.3,1) 0.62s forwards;}
+.s1-heading .w4 span{animation:wordrise 0.7s cubic-bezier(0.16,1,0.3,1) 0.78s forwards;}
+.s1-heading .w5 span{animation:wordrise 0.7s cubic-bezier(0.16,1,0.3,1) 0.94s forwards;}
+.s1-heading .w6 span{animation:wordrise 0.7s cubic-bezier(0.16,1,0.3,1) 1.1s forwards;}
+.s1-heading .w7 span{animation:wordrise 0.7s cubic-bezier(0.16,1,0.3,1) 1.26s forwards;}
+@keyframes wordrise{to{transform:translateY(0);opacity:1;}}
+
+.s1-heading .gold-word span{color:var(--gold2);}
+.s1-heading .italic-word span{font-style:italic;font-weight:300;}
+
+.s1-sub{
+  font-size:13px;color:var(--fog);line-height:1.8;
+  margin-top:20px;letter-spacing:0.04em;max-width:400px;
+  opacity:0;animation:fadein 0.6s ease 1.5s forwards;
+}
+
+/* Bottom data strip */
+#s1 .s1-data{
+  position:absolute;bottom:0;left:0;right:0;height:44px;
+  border-top:1px solid rgba(184,150,46,0.1);
+  display:flex;align-items:center;padding:0 56px;gap:48px;
+  opacity:0;animation:fadein 0.6s ease 1.2s forwards;
+}
+.data-item{font-family:'DM Mono',monospace;font-size:9px;color:var(--fog);letter-spacing:0.1em;}
+.data-item .data-val{color:var(--gold2);margin-right:8px;}
+
+@keyframes fadein{to{opacity:1;}}
+
+
+/* ════════════════════════════════════════
+   S2: THE CONSEQUENCE  (7–13s)
+   Full cream. Stark. A client searching
+   for a business — finds nothing.
+   The cost of no website visualised.
+════════════════════════════════════════ */
+#s2{background:var(--cream);}
+
+#s2 .s2-gold-stripe{
+  position:absolute;top:0;left:0;right:0;height:3px;
+  background:var(--gold);
+  transform:scaleX(0);transform-origin:left;
+  animation:barslide 0.7s cubic-bezier(0.16,1,0.3,1) 0.1s forwards;
+}
+@keyframes barslide{to{transform:scaleX(1);}}
+
+/* Search bar mockup — the emotional gut punch */
+#s2 .search-area{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-55%);
+  width:800px;
+}
+#s2 .search-label{
+  font-size:9px;letter-spacing:0.7em;color:var(--gold3);text-transform:uppercase;
+  margin-bottom:14px;text-align:center;
+  opacity:0;animation:fadein 0.5s ease 0.15s forwards;
+}
+#s2 .search-bar{
+  width:100%;height:56px;
+  border:1px solid var(--fog2);
+  display:flex;align-items:center;padding:0 20px;gap:14px;
+  background:#fff;
+  opacity:0;animation:fadein 0.4s ease 0.3s forwards;
+}
+#s2 .search-icon{font-size:16px;color:var(--fog);}
+#s2 .search-text{
+  font-family:'DM Mono',monospace;font-size:14px;color:var(--ink2);
+  letter-spacing:0.02em;
+  overflow:hidden;white-space:nowrap;
+}
+#s2 .type-cursor{
+  display:inline-block;width:2px;height:16px;
+  background:var(--ink);vertical-align:middle;
+  margin-left:1px;
+  animation:blink 0.8s step-start infinite;
+}
+
+#s2 .search-result-area{
+  margin-top:16px;
+  opacity:0;animation:fadein 0.4s ease 1.8s forwards;
+}
+#s2 .no-result{
+  height:52px;border:1px solid rgba(0,0,0,0.08);
+  display:flex;align-items:center;padding:0 20px;gap:16px;
+  background:rgba(0,0,0,0.02);
+}
+#s2 .nr-dot{width:8px;height:8px;border-radius:50%;background:var(--fog2);}
+#s2 .nr-text{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:18px;color:var(--fog);letter-spacing:0.04em;
+}
+#s2 .nr-instead{
+  margin-left:auto;
+  font-size:10px;color:var(--fog2);letter-spacing:0.06em;
+}
+/* A competitor result shows up */
+#s2 .competitor-result{
+  height:52px;border:1px solid rgba(0,0,0,0.08);
+  border-top:none;
+  display:flex;align-items:center;padding:0 20px;gap:16px;
+  background:#fff;
+  opacity:0;animation:fadein 0.5s ease 2.5s forwards;
+}
+#s2 .cr-dot{width:8px;height:8px;border-radius:50%;background:var(--gold);}
+#s2 .cr-text{font-size:14px;color:var(--ink);letter-spacing:0.02em;}
+#s2 .cr-link{
+  margin-left:auto;font-family:'DM Mono',monospace;
+  font-size:10px;color:var(--gold);letter-spacing:0.05em;
+}
+
+#s2 .consequence-label{
+  position:absolute;bottom:80px;left:50%;transform:translateX(-50%);
+  text-align:center;
+  opacity:0;animation:fadein 0.7s ease 3s forwards;
+}
+#s2 .cl-main{
+  font-family:'Cormorant Garamond',serif;font-weight:600;
+  font-size:44px;color:var(--ink);letter-spacing:-0.01em;
+}
+#s2 .cl-main em{font-style:italic;color:var(--gold3);font-weight:300;}
+#s2 .cl-sub{
+  font-size:11px;color:var(--fog);letter-spacing:0.12em;text-transform:uppercase;
+  margin-top:6px;
+}
+
+
+/* ════════════════════════════════════════
+   S3: NORTHSTAR ENTERS  (13–20s)
+   Dark. Dramatic. The brand arrives.
+   Split — logo builds left, 24hr lands right.
+   Camera-zoom energy.
+════════════════════════════════════════ */
+#s3{background:var(--ink);}
+
+/* Horizontal rule that draws across */
+#s3 .s3-rule{
+  position:absolute;top:50%;left:0;right:0;height:1px;
+  background:rgba(184,150,46,0.2);
+  transform:scaleX(0);transform-origin:left;
+  animation:barslide 1.2s cubic-bezier(0.16,1,0.3,1) 0.2s forwards;
+}
+
+#s3 .s3-left{
+  position:absolute;left:0;top:0;bottom:0;right:50%;
+  display:flex;flex-direction:column;
+  justify-content:center;padding:0 0 0 80px;
+}
+#s3 .s3-right{
+  position:absolute;left:50%;top:0;bottom:0;right:0;
+  display:flex;flex-direction:column;
+  justify-content:center;align-items:flex-start;
+  padding:0 0 0 80px;
+  border-left:1px solid rgba(184,150,46,0.12);
+}
+
+/* Logo builds — compass first, then name */
+#s3 .s3-compass{
+  opacity:0;
+  transform:rotate(-90deg) scale(0.6);
+  animation:compass-arrive 1s cubic-bezier(0.34,1.4,0.64,1) 0.3s forwards;
+  margin-bottom:20px;
+  width:52px;height:52px;
+}
+@keyframes compass-arrive{to{opacity:1;transform:rotate(0deg) scale(1);}}
+
+#s3 .s3-name{
+  font-family:'Cormorant Garamond',serif;font-weight:300;
+  font-size:72px;line-height:1;letter-spacing:0.04em;
+  color:var(--cream);
+  overflow:hidden;
+}
+#s3 .s3-name span{
+  display:block;transform:translateY(100%);
+  animation:wordrise 0.8s cubic-bezier(0.16,1,0.3,1) 0.6s forwards;
+}
+#s3 .s3-web{
+  font-size:9px;letter-spacing:0.9em;color:var(--gold);text-transform:uppercase;
+  margin-top:8px;
+  opacity:0;animation:fadein 0.5s ease 1.1s forwards;
+}
+#s3 .s3-verdict{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:17px;color:var(--fog);line-height:1.8;
+  margin-top:24px;max-width:360px;
+  opacity:0;animation:fadein 0.6s ease 1.4s forwards;
+}
+
+/* The 24 — the hero number */
+#s3 .s3-24{
+  font-family:'Cormorant Garamond',serif;font-weight:700;
+  font-size:260px;line-height:0.85;
+  color:var(--gold);letter-spacing:-0.05em;
+  opacity:0;
+  transform:scale(0.75) translateX(-30px);
+  animation:number-land 0.9s cubic-bezier(0.34,1.3,0.64,1) 0.5s forwards;
+}
+@keyframes number-land{to{opacity:1;transform:scale(1) translateX(0);}}
+
+#s3 .s3-24-label{
+  font-size:9px;letter-spacing:0.8em;color:var(--gold3);text-transform:uppercase;
+  margin-top:10px;
+  display:flex;align-items:center;gap:12px;
+  opacity:0;animation:fadein 0.5s ease 1s forwards;
+}
+#s3 .s3-24-label::before{content:'';display:block;width:28px;height:1px;background:var(--gold3);}
+#s3 .s3-promise{
+  font-family:'Cormorant Garamond',serif;
+  font-size:22px;font-weight:300;
+  color:var(--cream);margin-top:16px;line-height:1.4;
+  max-width:380px;
+  opacity:0;animation:fadein 0.6s ease 1.2s forwards;
+}
+#s3 .s3-promise em{font-style:italic;color:var(--gold2);}
+
+
+/* ════════════════════════════════════════
+   S4: THE PROCESS IN MOTION  (20–27s)
+   Three columns — but they ANIMATE in
+   like a timeline being written live.
+   Feel: urgent, precise, cinematic.
+════════════════════════════════════════ */
+#s4{background:var(--ink);}
+
+#s4 .s4-header{
+  position:absolute;top:0;left:0;right:0;height:72px;
+  display:flex;align-items:center;padding:0 80px;
+  justify-content:space-between;
+  border-bottom:1px solid rgba(184,150,46,0.1);
+}
+#s4 .s4-title{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:20px;font-weight:300;color:var(--cream);
+  opacity:0;animation:fadein 0.5s ease 0.1s forwards;
+}
+/* Live timer counting down from 24:00:00 */
+#s4 .s4-live-timer{
+  font-family:'DM Mono',monospace;font-size:13px;
+  color:var(--gold2);letter-spacing:0.12em;
+}
+
+/* Three timeline columns — staggered draw */
+#s4 .timeline{
+  position:absolute;top:72px;left:0;right:0;bottom:0;
+  display:grid;grid-template-columns:1fr 1fr 1fr;
+}
+.tl-col{
+  padding:44px 60px;
+  border-right:1px solid rgba(184,150,46,0.08);
+  position:relative;overflow:hidden;
+}
+.tl-col:last-child{border-right:none;}
+
+/* Line that draws downward — the "timeline" feel */
+.tl-col::before{
+  content:'';position:absolute;
+  left:59px;top:0;width:1px;height:0;
+  background:var(--gold);opacity:0.4;
+  animation:linedown 0.8s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+.tl-col:nth-child(1)::before{animation-delay:0.2s;}
+.tl-col:nth-child(2)::before{animation-delay:0.5s;}
+.tl-col:nth-child(3)::before{animation-delay:0.8s;}
+@keyframes linedown{to{height:100%;}}
+
+/* Dot on the timeline */
+.tl-dot{
+  width:10px;height:10px;border-radius:50%;
+  border:1px solid var(--gold);background:transparent;
+  margin-bottom:28px;position:relative;z-index:1;
+  opacity:0;
+}
+.tl-col:nth-child(1) .tl-dot{animation:fadein 0.3s ease 0.6s forwards;}
+.tl-col:nth-child(2) .tl-dot{animation:fadein 0.3s ease 0.9s forwards;}
+.tl-col:nth-child(3) .tl-dot{animation:fadein 0.3s ease 1.2s forwards;}
+
+.tl-time{
+  font-family:'Cormorant Garamond',serif;font-weight:600;
+  font-size:82px;line-height:1;letter-spacing:-0.02em;
+  margin-bottom:16px;
+  opacity:0;transform:translateY(20px);
+}
+.tl-col:nth-child(1) .tl-time{color:var(--gold2);animation:slideup 0.6s cubic-bezier(0.16,1,0.3,1) 0.5s forwards;}
+.tl-col:nth-child(2) .tl-time{color:var(--fog2);animation:slideup 0.6s cubic-bezier(0.16,1,0.3,1) 0.8s forwards;}
+.tl-col:nth-child(3) .tl-time{color:var(--cream);animation:slideup 0.6s cubic-bezier(0.16,1,0.3,1) 1.1s forwards;}
+@keyframes slideup{to{opacity:1;transform:translateY(0);}}
+
+.tl-unit{
+  font-size:11px;letter-spacing:0.4em;text-transform:uppercase;
+  margin-bottom:20px;opacity:0;
+}
+.tl-col:nth-child(1) .tl-unit{color:var(--gold3);animation:fadein 0.4s ease 0.9s forwards;}
+.tl-col:nth-child(2) .tl-unit{color:var(--fog);animation:fadein 0.4s ease 1.2s forwards;}
+.tl-col:nth-child(3) .tl-unit{color:var(--fog2);animation:fadein 0.4s ease 1.5s forwards;}
+
+.tl-rule{width:0;height:1px;background:var(--gold);margin-bottom:18px;}
+.tl-col:nth-child(1) .tl-rule{animation:widen 0.5s ease 0.85s forwards;}
+.tl-col:nth-child(2) .tl-rule{animation:widen 0.5s ease 1.15s forwards;}
+.tl-col:nth-child(3) .tl-rule{animation:widen 0.5s ease 1.45s forwards;}
+@keyframes widen{to{width:32px;}}
+
+.tl-name{
+  font-family:'Tenor Sans',sans-serif;
+  font-size:15px;letter-spacing:0.12em;text-transform:uppercase;
+  color:var(--cream);margin-bottom:12px;
+  opacity:0;
+}
+.tl-col:nth-child(1) .tl-name{animation:fadein 0.4s ease 1s forwards;}
+.tl-col:nth-child(2) .tl-name{animation:fadein 0.4s ease 1.3s forwards;}
+.tl-col:nth-child(3) .tl-name{animation:fadein 0.4s ease 1.6s forwards;}
+
+.tl-desc{
+  font-size:12px;color:var(--fog);line-height:1.9;letter-spacing:0.03em;
+  opacity:0;
+}
+.tl-col:nth-child(1) .tl-desc{animation:fadein 0.5s ease 1.15s forwards;}
+.tl-col:nth-child(2) .tl-desc{animation:fadein 0.5s ease 1.45s forwards;}
+.tl-col:nth-child(3) .tl-desc{animation:fadein 0.5s ease 1.75s forwards;}
+
+
+/* ════════════════════════════════════════
+   S5: THE CLOSE  (27–36s)
+   Cream. Full screen. Logo. One line.
+   Silence then the phone number lands.
+   Complete stillness = confidence.
+════════════════════════════════════════ */
+#s5{background:var(--cream);}
+
+/* The background — very subtle dot grid */
+#s5::before{
+  content:'';position:absolute;inset:0;
+  background-image:radial-gradient(circle, rgba(184,150,46,0.12) 1px, transparent 1px);
+  background-size:40px 40px;
+}
+
+#s5 .s5-content{
+  position:relative;z-index:2;
+  width:100%;height:100%;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+}
+
+/* Gold rule draws across first */
+#s5 .s5-top-rule{
+  position:absolute;top:0;left:0;right:0;height:3px;
+  background:var(--gold);
+  transform:scaleX(0);transform-origin:left;
+  animation:barslide 0.9s cubic-bezier(0.16,1,0.3,1) 0.2s forwards;
+}
+
+/* Logo enters with weight */
+#s5 .s5-logo{
+  display:flex;align-items:center;gap:16px;
+  margin-bottom:44px;
+  opacity:0;transform:translateY(-18px);
+  animation:dropland 0.8s cubic-bezier(0.16,1,0.3,1) 0.5s forwards;
+}
+@keyframes dropland{to{opacity:1;transform:translateY(0);}}
+#s5 .s5-logoname{
+  font-family:'Cormorant Garamond',serif;font-weight:300;
+  font-size:34px;letter-spacing:0.1em;color:var(--ink);
+  line-height:1;
+}
+#s5 .s5-logoweb{
+  font-size:9px;letter-spacing:0.8em;color:var(--gold);
+  text-transform:uppercase;margin-top:3px;
+}
+
+/* The single line — the whole USP in one breath */
+#s5 .s5-headline{
+  font-family:'Cormorant Garamond',serif;
+  font-weight:300;
+  text-align:center;
+  margin-bottom:40px;
+}
+.hl-row{
+  display:block;overflow:hidden;
+}
+.hl-row span{
+  display:block;
+  font-size:80px;line-height:0.92;
+  color:var(--ink);letter-spacing:-0.01em;
+  transform:translateY(108%);
+}
+.hl-row span em{font-style:italic;color:var(--gold);}
+.hl-row:nth-child(1) span{animation:wordrise 0.85s cubic-bezier(0.16,1,0.3,1) 0.8s forwards;}
+.hl-row:nth-child(2) span{animation:wordrise 0.85s cubic-bezier(0.16,1,0.3,1) 0.95s forwards;}
+.hl-row:nth-child(3) span{animation:wordrise 0.85s cubic-bezier(0.16,1,0.3,1) 1.1s forwards;}
+
+/* Rule */
+#s5 .s5-rule{
+  width:0;height:1px;background:var(--gold);
+  animation:widen2 0.8s ease 1.5s forwards;
+  margin-bottom:36px;
+}
+@keyframes widen2{to{width:160px;}}
+
+/* Contact */
+#s5 .s5-cta{
+  text-align:center;
+  opacity:0;animation:fadein 0.7s ease 1.7s forwards;
+}
+#s5 .s5-phone{
+  font-family:'Cormorant Garamond',serif;font-weight:300;
+  font-size:38px;letter-spacing:0.12em;color:var(--ink);
+}
+#s5 .s5-site{
+  font-size:9px;letter-spacing:0.7em;color:var(--fog);text-transform:uppercase;margin-top:6px;
+}
+
+/* Bottom bar */
+#s5 .s5-bar{
+  position:absolute;bottom:0;left:0;right:0;height:52px;
+  background:var(--ink);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 80px;
+  transform:translateY(100%);
+  animation:slideup-bar 0.55s cubic-bezier(0.16,1,0.3,1) 1.9s forwards;
+}
+@keyframes slideup-bar{to{transform:translateY(0);}}
+#s5 .s5-bar-l{font-size:9px;letter-spacing:0.45em;color:var(--fog);text-transform:uppercase;}
+#s5 .s5-bar-r{display:flex;align-items:center;gap:8px;}
+#s5 .s5-bar-dot{width:5px;height:5px;border-radius:50%;background:var(--gold);animation:pulse 2s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+#s5 .s5-bar-txt{font-family:'DM Mono',monospace;font-size:9px;color:var(--gold2);letter-spacing:0.1em;}
+</style>
+</head>
+<body>
+
+<div id="cursor"></div>
+
+<!-- GATE -->
+<div id="gate">
+  <svg class="g-compass" width="52" height="52" viewBox="0 0 44 44" fill="none">
+    <path d="M22 2 L27 19 L22 16 L17 19 Z" fill="#B8962E"/>
+    <path d="M42 22 L25 17 L28 22 L25 27 Z" fill="#8B6E1A"/>
+    <path d="M22 42 L17 25 L22 28 L27 25 Z" fill="#8B6E1A"/>
+    <path d="M2 22 L19 27 L16 22 L19 17 Z" fill="#D4AE4A"/>
+  </svg>
+  <div class="g-name">Northstar</div>
+  <div class="g-sub">Web Studio · Mumbai</div>
+  <button id="playBtn">Play</button>
+</div>
+
+<!-- AD -->
+<div id="ad">
+  <canvas id="bg-canvas"></canvas>
+  <div id="prog"></div>
+
+  <!-- S1: THE LIVE CLOCK -->
+  <div class="scene" id="s1">
+    <div class="s1-top-bar">
+      <div class="s1-url">northstarweb.in / start-project</div>
+      <div class="s1-status">● Live now</div>
+    </div>
+    <div class="s1-copy">
+      <div class="s1-micro">Mumbai · Web Studio</div>
+      <div class="s1-heading">
+        <div class="reveal-word w1"><span>Right</span></div>&nbsp;
+        <div class="reveal-word w2"><span>now,</span></div><br>
+        <div class="reveal-word w3 italic-word"><span>someone</span></div>&nbsp;
+        <div class="reveal-word w4"><span>is</span></div>&nbsp;
+        <div class="reveal-word w5"><span>searching</span></div>&nbsp;
+        <div class="reveal-word w6"><span>for</span></div><br>
+        <div class="reveal-word w7 gold-word"><span>your business.</span></div>
+      </div>
+      <p class="s1-sub">They won't find you. Not because your business isn't great — but because you have no website.</p>
+    </div>
+    <div class="clock-wrap">
+      <div class="clock-label">Time you've been offline</div>
+      <div class="clock-display" id="live-clock">00<span class="colon">:</span>00<span class="colon">:</span>00</div>
+      <div class="clock-sub">hh : mm : ss</div>
+    </div>
+    <div class="s1-data">
+      <div class="data-item"><span class="data-val">₹2,400</span> avg revenue lost per day, no website</div>
+      <div class="data-item"><span class="data-val">73%</span> of users distrust businesses without websites</div>
+      <div class="data-item"><span class="data-val">24hrs</span> to fix all of this</div>
+    </div>
+  </div>
+
+  <!-- S2: THE CONSEQUENCE -->
+  <div class="scene" id="s2">
+    <div class="s2-gold-stripe"></div>
+    <div class="search-area">
+      <div class="search-label">What your next client sees</div>
+      <div class="search-bar">
+        <span class="search-icon">⌕</span>
+        <div class="search-text" id="search-typed"></div>
+        <div class="type-cursor"></div>
+      </div>
+      <div class="search-result-area">
+        <div class="no-result">
+          <div class="nr-dot"></div>
+          <div class="nr-text">No results found for this business</div>
+          <div class="nr-instead">Showing alternatives instead →</div>
+        </div>
+        <div class="competitor-result">
+          <div class="cr-dot"></div>
+          <div class="cr-text">Your Competitor · Professional Web Services · Mumbai</div>
+          <div class="cr-link">Visit site →</div>
+        </div>
+      </div>
+    </div>
+    <div class="consequence-label">
+      <div class="cl-main">They chose <em>someone else.</em></div>
+      <div class="cl-sub">This happens hundreds of times a day</div>
+    </div>
+  </div>
+
+  <!-- S3: NORTHSTAR ENTERS -->
+  <div class="scene" id="s3">
+    <div class="s3-rule"></div>
+    <div class="s3-left">
+      <svg class="s3-compass" width="52" height="52" viewBox="0 0 44 44" fill="none">
+        <path d="M22 2 L27 19 L22 16 L17 19 Z" fill="#B8962E"/>
+        <path d="M42 22 L25 17 L28 22 L25 27 Z" fill="#8B6E1A"/>
+        <path d="M22 42 L17 25 L22 28 L27 25 Z" fill="#8B6E1A"/>
+        <path d="M2 22 L19 27 L16 22 L19 17 Z" fill="#D4AE4A"/>
+      </svg>
+      <div class="s3-name"><span>Northstar</span></div>
+      <div class="s3-web">Web Studio · Mumbai</div>
+      <p class="s3-verdict">We build websites for ambitious businesses who can't afford to wait. Brief to live — in one day.</p>
+    </div>
+    <div class="s3-right">
+      <div class="s3-24">24</div>
+      <div class="s3-24-label">Hours. Brief to live.</div>
+      <div class="s3-promise">Not next month. Not next week. <em>Tomorrow morning,</em> your site is live and you are findable.</div>
+    </div>
+  </div>
+
+  <!-- S4: THE PROCESS -->
+  <div class="scene" id="s4">
+    <div class="s4-header">
+      <div class="s4-title">How a day with Northstar unfolds</div>
+      <div class="s4-live-timer" id="countdown-timer">24:00:00</div>
+    </div>
+    <div class="timeline">
+      <div class="tl-col">
+        <div class="tl-dot"></div>
+        <div class="tl-time">1</div>
+        <div class="tl-unit">Hour</div>
+        <div class="tl-rule"></div>
+        <div class="tl-name">Brief & Design Direction</div>
+        <div class="tl-desc">You share your goals, brand, and content. We lock the look and feel — no committees, no back-and-forth spirals. One session, one direction.</div>
+      </div>
+      <div class="tl-col">
+        <div class="tl-dot"></div>
+        <div class="tl-time">8</div>
+        <div class="tl-unit">Hours</div>
+        <div class="tl-rule"></div>
+        <div class="tl-name">Build & Development</div>
+        <div class="tl-desc">Our developers build fast, clean, and mobile-first. You get live previews as it takes shape. Blazing load speeds baked in from line one.</div>
+      </div>
+      <div class="tl-col">
+        <div class="tl-dot"></div>
+        <div class="tl-time">24</div>
+        <div class="tl-unit">Hours</div>
+        <div class="tl-rule"></div>
+        <div class="tl-name">Live. Done. Found.</div>
+        <div class="tl-desc">QA, DNS, launch. Your site is live. You are now findable. The client who would have chosen your competitor — finds you instead.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S5: THE CLOSE -->
+  <div class="scene" id="s5">
+    <div class="s5-top-rule"></div>
+    <div class="s5-content">
+      <div class="s5-logo">
+        <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+          <path d="M22 2 L27 19 L22 16 L17 19 Z" fill="#B8962E"/>
+          <path d="M42 22 L25 17 L28 22 L25 27 Z" fill="#8B6E1A"/>
+          <path d="M22 42 L17 25 L22 28 L27 25 Z" fill="#8B6E1A"/>
+          <path d="M2 22 L19 27 L16 22 L19 17 Z" fill="#D4AE4A"/>
+        </svg>
+        <div>
+          <div class="s5-logoname">Northstar</div>
+          <div class="s5-logoweb">Web</div>
+        </div>
+      </div>
+      <div class="s5-headline">
+        <div class="hl-row"><span>Your website.</span></div>
+        <div class="hl-row"><span>Tomorrow morning.</span></div>
+        <div class="hl-row"><span><em>Guaranteed.</em></span></div>
+      </div>
+      <div class="s5-rule"></div>
+      <div class="s5-cta">
+        <div class="s5-phone">+91 77384 86780</div>
+        <div class="s5-site">northstarweb.in</div>
+      </div>
+    </div>
+    <div class="s5-bar">
+      <div class="s5-bar-l">Mumbai · India · Northstar Web</div>
+      <div class="s5-bar-r">
+        <div class="s5-bar-dot"></div>
+        <div class="s5-bar-txt">Taking new clients now</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ── Cursor ── */
+const cur = document.getElementById('cursor');
+document.addEventListener('mousemove', e=>{
+  cur.style.left = e.clientX+'px';
+  cur.style.top  = e.clientY+'px';
+});
+
+/* ── Live clock (S1) ── */
+let clockStart = null;
+function updateClock(ts){
+  if(!clockStart) return;
+  const elapsed = Math.floor((ts - clockStart)/1000);
+  const h = String(Math.floor(elapsed/3600)).padStart(2,'0');
+  const m = String(Math.floor((elapsed%3600)/60)).padStart(2,'0');
+  const s = String(elapsed%60).padStart(2,'0');
+  const el = document.getElementById('live-clock');
+  if(el) el.innerHTML = `${h}<span class="colon">:</span>${m}<span class="colon">:</span>${s}`;
+}
+
+/* ── Countdown timer (S4) ── */
+function updateCountdown(sceneStart, ts){
+  if(!sceneStart) return;
+  const remaining = Math.max(0, 86400 - Math.floor((ts - sceneStart)/1000));
+  const h = String(Math.floor(remaining/3600)).padStart(2,'0');
+  const m = String(Math.floor((remaining%3600)/60)).padStart(2,'0');
+  const s = String(remaining%60).padStart(2,'0');
+  const el = document.getElementById('countdown-timer');
+  if(el) el.textContent = `${h}:${m}:${s}`;
+}
+
+/* ── Typewriter (S2) ── */
+function startTypewriter(){
+  const el = document.getElementById('search-typed');
+  if(!el) return;
+  const text = 'best web agency mumbai near me';
+  let i=0;
+  el.textContent='';
+  const iv = setInterval(()=>{
+    if(i<text.length){ el.textContent += text[i]; i++; }
+    else clearInterval(iv);
+  }, 60);
+}
+
+/* ── Background canvas (subtle floating orbs) ── */
+const bgC = document.getElementById('bg-canvas');
+bgC.width=1280; bgC.height=720;
+const bgCtx = bgC.getContext('2d');
+const orbs = Array.from({length:5},(_,i)=>({
+  x:200+i*220, y:150+i*80,
+  vx:(Math.random()-0.5)*0.2, vy:(Math.random()-0.5)*0.15,
+  r:80+i*30
+}));
+function drawBg(){
+  bgCtx.clearRect(0,0,1280,720);
+  orbs.forEach(o=>{
+    o.x+=o.vx; o.y+=o.vy;
+    if(o.x<-o.r||o.x>1280+o.r)o.vx*=-1;
+    if(o.y<-o.r||o.y>720+o.r)o.vy*=-1;
+    const grad=bgCtx.createRadialGradient(o.x,o.y,0,o.x,o.y,o.r);
+    grad.addColorStop(0,'rgba(184,150,46,0.025)');
+    grad.addColorStop(1,'transparent');
+    bgCtx.beginPath(); bgCtx.arc(o.x,o.y,o.r,0,Math.PI*2);
+    bgCtx.fillStyle=grad; bgCtx.fill();
+  });
+  requestAnimationFrame(drawBg);
+}
+drawBg();
+
+/* ── Audio ── */
+let ac;
+function initAudio(){ ac = new(window.AudioContext||window.webkitAudioContext)(); }
+
+function G(v){ const g=ac.createGain(); g.gain.value=v; g.connect(ac.destination); return g; }
+
+function pad(freqs,t,dur,vol,type){
+  const g=G(0); const now=ac.currentTime;
+  freqs.forEach(f=>{
+    const o=ac.createOscillator(),lg=ac.createGain();
+    o.type=type||'sine'; o.frequency.value=f;
+    lg.gain.value=0.8/freqs.length;
+    o.connect(lg); lg.connect(g);
+    o.start(now+t); o.stop(now+t+dur+1);
+  });
+  g.gain.setValueAtTime(0,now+t);
+  g.gain.linearRampToValueAtTime(vol,now+t+1.2);
+  g.gain.setValueAtTime(vol,now+t+dur-1.2);
+  g.gain.linearRampToValueAtTime(0,now+t+dur);
+}
+function pluck(f,t,v){
+  const now=ac.currentTime; const o=ac.createOscillator(),g=G(0);
+  const flt=ac.createBiquadFilter(); flt.type='lowpass'; flt.frequency.value=2800;
+  o.type='triangle'; o.frequency.value=f;
+  o.connect(flt); flt.connect(g.gain?g:ac.destination);
+  const gg=ac.createGain();
+  o.disconnect(); o.connect(flt); flt.connect(gg); gg.connect(ac.destination);
+  gg.gain.setValueAtTime(0,now+t);
+  gg.gain.linearRampToValueAtTime(v,now+t+0.008);
+  gg.gain.exponentialRampToValueAtTime(0.001,now+t+2.5);
+  o.start(now+t); o.stop(now+t+3);
+}
+function bell(f,t,v){
+  const now=ac.currentTime; const o=ac.createOscillator(),g=ac.createGain();
+  o.type='sine'; o.frequency.value=f;
+  o.connect(g); g.connect(ac.destination);
+  g.gain.setValueAtTime(0,now+t);
+  g.gain.linearRampToValueAtTime(v,now+t+0.008);
+  g.gain.exponentialRampToValueAtTime(0.001,now+t+3.5);
+  o.start(now+t); o.stop(now+t+4);
+}
+function kick(t){
+  const now=ac.currentTime; const o=ac.createOscillator(),g=ac.createGain();
+  o.type='sine';
+  o.frequency.setValueAtTime(100,now+t);
+  o.frequency.exponentialRampToValueAtTime(38,now+t+0.15);
+  g.gain.setValueAtTime(0.2,now+t);
+  g.gain.exponentialRampToValueAtTime(0.001,now+t+0.25);
+  o.connect(g); g.connect(ac.destination);
+  o.start(now+t); o.stop(now+t+0.3);
+}
+function hat(t,v){
+  const now=ac.currentTime;
+  const buf=ac.createBuffer(1,Math.floor(ac.sampleRate*0.04),ac.sampleRate);
+  const d=buf.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
+  const s=ac.createBufferSource(); s.buffer=buf;
+  const f=ac.createBiquadFilter(); f.type='highpass'; f.frequency.value=9000;
+  const g=ac.createGain();
+  s.connect(f); f.connect(g); g.connect(ac.destination);
+  g.gain.setValueAtTime(v||0.028,now+t);
+  g.gain.exponentialRampToValueAtTime(0.001,now+t+0.04);
+  s.start(now+t); s.stop(now+t+0.06);
+}
+function bass(f,t,dur,v){
+  const now=ac.currentTime; const o=ac.createOscillator();
+  const flt=ac.createBiquadFilter(); flt.type='lowpass'; flt.frequency.value=220;
+  const g=ac.createGain();
+  o.type='sawtooth'; o.frequency.value=f;
+  o.connect(flt); flt.connect(g); g.connect(ac.destination);
+  g.gain.setValueAtTime(0,now+t);
+  g.gain.linearRampToValueAtTime(v,now+t+0.02);
+  g.gain.setValueAtTime(v,now+t+dur-0.06);
+  g.gain.linearRampToValueAtTime(0,now+t+dur);
+  o.start(now+t); o.stop(now+t+dur+0.1);
+}
+function riser(t,dur){
+  const now=ac.currentTime; const o=ac.createOscillator(),g=ac.createGain();
+  const f=ac.createBiquadFilter(); f.type='lowpass';
+  f.frequency.setValueAtTime(300,now+t);
+  f.frequency.exponentialRampToValueAtTime(5000,now+t+dur);
+  o.type='sawtooth'; o.frequency.value=41;
+  o.connect(f); f.connect(g); g.connect(ac.destination);
+  g.gain.setValueAtTime(0,now+t);
+  g.gain.linearRampToValueAtTime(0.07,now+t+dur*0.6);
+  g.gain.exponentialRampToValueAtTime(0.001,now+t+dur);
+  o.start(now+t); o.stop(now+t+dur+0.1);
+}
+
+function playScore(){
+  /* S1 0-7s: Cinematic dread. Sparse. Clock ticking. */
+  pad([41,55,82],0,7,0.06);
+  bell(880,0.4,0.04); bell(1109,1.6,0.035); bell(1319,3.1,0.04); bell(880,5,0.03);
+  pluck(440,0.6,0.04); pluck(554,2.2,0.035); pluck(659,4.0,0.04);
+  // Heartbeat-like ticks
+  [1,2,3,4,5,6].forEach(t=>{ kick(t-0.02); });
+
+  /* S2 7-13s: Tension tightens. Minor. */
+  pad([37,55,82],7,6,0.07);
+  for(let i=0;i<6;i++){ kick(7+i); hat(7+i+0.5,0.02); }
+  bass(37,7,1.5,0.1); bass(37,9,1.5,0.1); bass(41,11,2,0.09);
+  [294,330,370,415,370,330].forEach((f,i)=>pluck(f,8+i*0.65,0.04));
+  riser(11.5,1.5);
+
+  /* S3 13-20s: THE DROP. Brand arrives. Relief and power. */
+  kick(13); kick(13.06);
+  pad([55,82,110,165],13.5,6.5,0.1);
+  pad([165,220,275,330],14,6,0.06);
+  [659,880,1109,1319,1760].forEach((f,i)=>bell(f,13.8+i*0.2,0.07-i*0.009));
+  for(let i=0;i<6;i+=0.5){ kick(14+i); hat(14+i+0.25,0.03); }
+  [41,41,55,41,55,55,82,55].forEach((f,i)=>bass(f,14+i*0.5,0.45,0.14));
+  [523,659,784,1047,1319,1047,784].forEach((f,i)=>pluck(f,15+i*0.4,0.07));
+  [440,554,659,880,1047].forEach((f,i)=>pluck(f,17.5+i*0.35,0.06));
+
+  /* S4 20-27s: Purposeful. Confident rhythm. */
+  pad([41,55,82,110],20,7,0.08);
+  for(let i=0;i<7;i++){ kick(20+i); hat(20+i+0.5,0.025); hat(20+i+0.25,0.015); }
+  [41,41,55,41,55,49,55,41,55,55,82,55,65,55].forEach((f,i)=>bass(f,20+i*0.5,0.46,0.13));
+  [330,415,494,587,740,587,494,415,
+   370,466,587,740,880,740,587,466].forEach((f,i)=>pluck(f,20.5+i*0.38,0.055));
+
+  /* S5 27-36s: Resolution. Gold. Warm. Earned. */
+  pad([55,82,110,138,165,220],27,9,0.12);
+  pad([220,277,330,415,554],27.5,8.5,0.06);
+  [659,880,1047,1319,1760].forEach((f,i)=>bell(f,27.2+i*0.18,0.08-i*0.01));
+  for(let i=0;i<6;i++){ kick(28+i); hat(28+i+0.5,0.02*(1-i/10)); }
+  [55,55,82,55,82,82,110,82].forEach((f,i)=>bass(f,28+i*0.5,0.48,0.11));
+  [523,659,784,880,1047,880,784,659].forEach((f,i)=>pluck(f,29+i*0.5,0.065));
+  [880,1109,1319,1760].forEach((f,i)=>bell(f,32+i*0.35,0.055));
+}
+
+/* ── Scene engine ── */
+const SCENES = ['s1','s2','s3','s4','s5'];
+const DURS   = [7000,6000,7000,7000,9000];
+const TOTAL  = DURS.reduce((a,b)=>a+b,0);
+let cur=0, startTS=null, s4Start=null;
+const progEl = document.getElementById('prog');
+
+function showScene(i){
+  SCENES.forEach((id,j)=>{
+    const el = document.getElementById(id);
+    el.style.display = j===i ? 'block' : 'none';
+    el.classList.toggle('active', j===i);
+  });
+  if(i===1) setTimeout(startTypewriter, 800);
+  if(i===3){ s4Start = performance.now(); }
+}
+
+// Hard cut between scenes — no fade. This is a director's choice.
+// Cuts are more gripping than fades. Fades are PowerPoint.
+function tick(ts){
+  if(!startTS){ startTS=ts; clockStart=ts; }
+  const elapsed = ts - startTS;
+  progEl.style.width = Math.min(elapsed/TOTAL*100,100)+'%';
+  updateClock(ts);
+  if(cur===3) updateCountdown(s4Start, ts);
+
+  let acc=0;
+  for(let i=0;i<DURS.length;i++){
+    acc+=DURS[i];
+    if(elapsed<acc){
+      if(i!==cur){ cur=i; showScene(cur); }
+      break;
+    }
+  }
+  if(elapsed < TOTAL+500) requestAnimationFrame(tick);
+  else setTimeout(()=>{ cur=0; startTS=null; showScene(0); requestAnimationFrame(tick); }, 1500);
+}
+
+document.getElementById('playBtn').addEventListener('click',()=>{
+  initAudio(); playScore();
+  document.getElementById('gate').style.display='none';
+  document.getElementById('ad').style.display='block';
+  showScene(0);
+  requestAnimationFrame(tick);
+});
+</script>
+</body>
+</html>
