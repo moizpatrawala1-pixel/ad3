@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Northstar Web</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,300;0,700;1,300;1,700&family=Montserrat:wght@200;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --g:#C8A84B;--g2:#F0D878;--g3:#7A5F1A;
+  --bg:#06060A;--white:#F5F2EA;
+}
+html,body{width:1280px;height:720px;overflow:hidden;background:#000;cursor:none;}
+
+/* ── GATE ── */
+#gate{
+  position:fixed;inset:0;background:#06060A;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  z-index:9999;gap:12px;
+}
+#gate img{height:44px;filter:brightness(1.1);}
+#gate small{font-family:'Montserrat',sans-serif;font-size:10px;font-weight:200;
+  letter-spacing:0.45em;color:#333;text-transform:uppercase;margin-top:10px;}
+#playBtn{
+  margin-top:20px;background:transparent;border:1px solid var(--g);
+  color:var(--g);font-family:'Montserrat',sans-serif;font-weight:900;
+  font-size:11px;letter-spacing:0.35em;text-transform:uppercase;
+  padding:13px 44px;cursor:pointer;transition:all 0.25s;
+}
+#playBtn:hover{background:var(--g);color:#000;}
+
+/* ── MASTER ── */
+#ad{width:1280px;height:720px;position:relative;overflow:hidden;display:none;background:var(--bg);}
+
+/* main canvas always behind */
+#masterCanvas{position:absolute;inset:0;z-index:0;}
+
+/* ── PROGRESS ── */
+#prog{position:fixed;bottom:0;left:0;height:2px;background:var(--g);width:0%;z-index:999;transition:none;}
+
+/* ── ALL SCENES ── */
+.scene{position:absolute;inset:0;z-index:10;pointer-events:none;opacity:0;}
+.scene.active{opacity:1;}
+
+/* ════════════════════════════════
+   SCENE 1 — COLD OPEN (0–6s)
+   Single words slam center, big.
+════════════════════════════════ */
+#s1{display:flex;align-items:center;justify-content:center;}
+#s1 .slam{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:240px;line-height:1;
+  color:var(--white);
+  text-align:center;
+  letter-spacing:-0.02em;
+  position:absolute;
+  opacity:0;
+  transform:scale(2.4);
+  filter:blur(18px);
+  transition:none;
+  text-shadow:0 0 80px rgba(200,168,75,0.15);
+}
+#s1 .slam.show{
+  animation:slamIn 0.38s cubic-bezier(.16,1,.3,1) forwards;
+}
+#s1 .slam.hide{
+  animation:slamOut 0.22s ease-in forwards;
+}
+@keyframes slamIn{
+  0%{opacity:0;transform:scale(2.4);filter:blur(18px);}
+  100%{opacity:1;transform:scale(1);filter:blur(0);}
+}
+@keyframes slamOut{
+  0%{opacity:1;transform:scale(1);filter:blur(0);}
+  100%{opacity:0;transform:scale(0.7);filter:blur(8px);}
+}
+#s1 .slam.gold{color:var(--g);}
+
+/* ════════════════════════════════
+   SCENE 2 — CONFESSION (6–13s)
+   Scattered words rain → form sentence
+════════════════════════════════ */
+#s2{display:flex;align-items:center;justify-content:center;}
+#s2 .confession-wrap{position:relative;width:1100px;height:400px;}
+.cword{
+  position:absolute;
+  font-family:'Bebas Neue',sans-serif;
+  color:var(--white);
+  opacity:0;
+  pointer-events:none;
+  will-change:transform,opacity;
+}
+
+/* ════════════════════════════════
+   SCENE 3 — SHATTER + RISE (13–20s)
+   Broken pieces reassemble into logo
+════════════════════════════════ */
+#s3{display:flex;align-items:center;justify-content:center;flex-direction:column;}
+#s3 .shatter-text{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:130px;
+  letter-spacing:0.05em;
+  color:var(--white);
+  position:absolute;
+  top:50%;left:50%;
+  transform:translate(-50%,-60%);
+  white-space:nowrap;
+  opacity:0;
+  transition:opacity 0.01s;
+}
+#s3 .rise-logo{
+  position:absolute;
+  top:50%;left:50%;transform:translate(-50%,-50%) scale(0);
+  opacity:0;transition:none;
+  display:flex;flex-direction:column;align-items:center;gap:16px;
+}
+#s3 .rise-logo img{height:68px;filter:drop-shadow(0 0 30px rgba(200,168,75,0.7)) brightness(1.15);}
+#s3 .rise-tagline{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:22px;letter-spacing:0.15em;color:var(--g);
+  opacity:0;transition:opacity 0.8s ease;
+  white-space:nowrap;
+}
+
+/* ════════════════════════════════
+   SCENE 4 — PROOF (20–27s)
+   Cinematic full-bleed numbers
+════════════════════════════════ */
+#s4{background:var(--bg);}
+#s4 .proof-wrap{
+  position:absolute;inset:0;
+  display:flex;align-items:stretch;
+}
+.proof-col{
+  flex:1;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;
+}
+/* vertical dividers */
+.proof-col+.proof-col::before{
+  content:'';position:absolute;left:0;top:15%;bottom:15%;width:1px;
+  background:linear-gradient(180deg,transparent,var(--g3),transparent);
+}
+.proof-num{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:160px;line-height:1;
+  background:linear-gradient(180deg,var(--g2) 0%,var(--g) 60%,var(--g3) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  opacity:0;transform:translateY(80px) skewY(4deg);
+  transition:all 0.75s cubic-bezier(.16,1,.3,1);
+}
+.proof-unit{font-size:80px;}
+.proof-lbl{
+  font-family:'Montserrat',sans-serif;font-weight:900;
+  font-size:11px;letter-spacing:0.45em;color:var(--white);
+  text-transform:uppercase;margin-top:4px;
+  opacity:0;transform:translateY(20px);transition:all 0.55s ease;
+}
+.proof-sub{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:16px;color:var(--g3);margin-top:6px;
+  opacity:0;transform:translateY(12px);transition:all 0.5s ease;
+}
+#s4.active .proof-col:nth-child(1) .proof-num{opacity:1;transform:none;transition-delay:0.25s;}
+#s4.active .proof-col:nth-child(1) .proof-lbl{opacity:1;transform:none;transition-delay:0.45s;}
+#s4.active .proof-col:nth-child(1) .proof-sub{opacity:1;transform:none;transition-delay:0.55s;}
+#s4.active .proof-col:nth-child(2) .proof-num{opacity:1;transform:none;transition-delay:0.45s;}
+#s4.active .proof-col:nth-child(2) .proof-lbl{opacity:1;transform:none;transition-delay:0.65s;}
+#s4.active .proof-col:nth-child(2) .proof-sub{opacity:1;transform:none;transition-delay:0.75s;}
+#s4.active .proof-col:nth-child(3) .proof-num{opacity:1;transform:none;transition-delay:0.65s;}
+#s4.active .proof-col:nth-child(3) .proof-lbl{opacity:1;transform:none;transition-delay:0.85s;}
+#s4.active .proof-col:nth-child(3) .proof-sub{opacity:1;transform:none;transition-delay:0.95s;}
+
+/* horizontal gold line sweeps in at top */
+#s4 .sweep-line{
+  position:absolute;top:0;left:0;height:3px;width:0;
+  background:linear-gradient(90deg,transparent,var(--g),transparent);
+  transition:width 1.2s ease 0.15s;
+}
+#s4.active .sweep-line{width:100%;}
+
+/* ════════════════════════════════
+   SCENE 5 — CTA (27–34s)
+   Full-bleed, typographic monument
+════════════════════════════════ */
+#s5{display:flex;flex-direction:column;align-items:center;justify-content:center;}
+
+/* giant ghost text behind everything */
+#s5 .ghost{
+  position:absolute;
+  font-family:'Bebas Neue',sans-serif;
+  font-size:360px;line-height:1;
+  color:transparent;
+  -webkit-text-stroke:1px #111;
+  letter-spacing:-0.04em;
+  white-space:nowrap;
+  top:50%;left:50%;transform:translate(-50%,-50%) scale(0.9);
+  transition:transform 2s cubic-bezier(.16,1,.3,1) 0.2s;
+  pointer-events:none;
+  user-select:none;
+}
+#s5.active .ghost{transform:translate(-50%,-50%) scale(1.05);}
+
+#s5 .cta-inner{
+  position:relative;z-index:5;
+  display:flex;flex-direction:column;align-items:center;
+  gap:0;
+}
+#s5 .logo-hold{
+  opacity:0;transform:translateY(30px);
+  transition:all 0.9s cubic-bezier(.34,1.3,.64,1) 0.35s;
+}
+#s5.active .logo-hold{opacity:1;transform:translateY(0);}
+#s5 .logo-hold img{
+  height:60px;
+  filter:drop-shadow(0 0 40px rgba(200,168,75,0.6)) brightness(1.15);
+}
+
+#s5 .cta-line{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:98px;line-height:0.92;
+  text-align:center;letter-spacing:-0.01em;
+  overflow:hidden;margin-top:20px;
+}
+.cta-row{overflow:hidden;display:block;}
+.cta-row span{
+  display:block;color:var(--white);
+  transform:translateY(110%);
+  transition:transform 0.85s cubic-bezier(.16,1,.3,1);
+}
+.cta-row span.shine{
+  background:linear-gradient(135deg,var(--white) 30%,var(--g2) 55%,var(--white) 80%);
+  background-size:200% auto;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  animation:shine 3s linear infinite 1.5s;
+}
+@keyframes shine{0%{background-position:200% center;}100%{background-position:-200% center;}}
+#s5.active .cta-row:nth-child(1) span{transform:translateY(0);transition-delay:0.55s;}
+#s5.active .cta-row:nth-child(2) span{transform:translateY(0);transition-delay:0.72s;}
+
+#s5 .rule{
+  width:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--g),transparent);
+  margin:24px 0;transition:width 1s ease 1s;
+}
+#s5.active .rule{width:320px;}
+
+#s5 .contact-block{
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+  opacity:0;transition:opacity 0.7s ease 1.2s;
+}
+#s5.active .contact-block{opacity:1;}
+#s5 .phone{
+  font-family:'Bebas Neue',sans-serif;font-size:32px;
+  letter-spacing:0.18em;color:var(--g);
+}
+#s5 .site-url{
+  font-family:'Montserrat',sans-serif;font-weight:200;
+  font-size:12px;letter-spacing:0.4em;color:#555;text-transform:uppercase;
+}
+#s5 .sign-off{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:16px;color:#333;margin-top:14px;letter-spacing:0.08em;
+  opacity:0;transition:opacity 0.6s ease 1.6s;
+}
+#s5.active .sign-off{opacity:1;}
+
+/* gold bar bottom */
+#s5 .bar-bot{
+  position:absolute;bottom:0;left:0;height:3px;width:0;
+  background:linear-gradient(90deg,var(--g3),var(--g),var(--g2),var(--g),var(--g3));
+  transition:width 1.2s cubic-bezier(.4,0,.2,1) 0.6s;
+}
+#s5.active .bar-bot{width:100%;}
+
+/* vignette */
+.vig{
+  position:absolute;inset:0;pointer-events:none;z-index:8;
+  background:radial-gradient(ellipse 80% 70% at 50% 50%,transparent 40%,rgba(0,0,0,0.65) 100%);
+}
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <img src="data:image/png;base64,${LOGO_B64}" alt="Northstar Web">
+  <small>click to begin</small>
+  <button id="playBtn">▶ &nbsp; Play</button>
+</div>
+
+<div id="ad">
+  <canvas id="masterCanvas"></canvas>
+  <div id="prog"></div>
+  <div class="vig"></div>
+
+  <!-- S1: COLD OPEN — word slam -->
+  <div class="scene" id="s1">
+    <div class="slam" id="slWord"></div>
+  </div>
+
+  <!-- S2: CONFESSION — scattered words form a sentence -->
+  <div class="scene" id="s2">
+    <div class="confession-wrap" id="confWrap"></div>
+  </div>
+
+  <!-- S3: SHATTER → RISE -->
+  <div class="scene" id="s3">
+    <div class="shatter-text" id="shatterText">BROKEN.</div>
+    <canvas id="shatterCanvas" style="position:absolute;inset:0;z-index:2;pointer-events:none;"></canvas>
+    <div class="rise-logo" id="riseLogo">
+      <img src="data:image/png;base64,${LOGO_B64}" alt="Northstar Web">
+      <div class="rise-tagline">Navigate your brand to the top.</div>
+    </div>
+  </div>
+
+  <!-- S4: PROOF -->
+  <div class="scene" id="s4">
+    <div class="sweep-line"></div>
+    <div class="proof-wrap">
+      <div class="proof-col">
+        <div class="proof-num">3<span class="proof-unit">×</span></div>
+        <div class="proof-lbl">More Leads</div>
+        <div class="proof-sub">avg. post-launch</div>
+      </div>
+      <div class="proof-col">
+        <div class="proof-num">7<span class="proof-unit">d</span></div>
+        <div class="proof-lbl">Brief to Live</div>
+        <div class="proof-sub">every time</div>
+      </div>
+      <div class="proof-col">
+        <div class="proof-num">100<span class="proof-unit">%</span></div>
+        <div class="proof-lbl">On-Time</div>
+        <div class="proof-sub">zero exceptions</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S5: CTA -->
+  <div class="scene" id="s5">
+    <div class="ghost">NORTH</div>
+    <div class="cta-inner">
+      <div class="logo-hold">
+        <img src="data:image/png;base64,${LOGO_B64}" alt="Northstar Web">
+      </div>
+      <div class="cta-line">
+        <div class="cta-row"><span class="shine">YOUR BRAND.</span></div>
+        <div class="cta-row"><span>OUR MISSION.</span></div>
+      </div>
+      <div class="rule"></div>
+      <div class="contact-block">
+        <div class="phone">+91 77384 86780</div>
+        <div class="site-url">northstarweb.in</div>
+      </div>
+      <div class="sign-off">Mumbai's web studio — built for businesses that mean it.</div>
+    </div>
+    <div class="bar-bot"></div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════
+   MASTER CANVAS — starfield + ambient glow
+══════════════════════════════════════════ */
+const MC=document.getElementById('masterCanvas');
+MC.width=1280;MC.height=720;
+const MCX=MC.getContext('2d');
+const stars=Array.from({length:220},()=>({
+  x:Math.random()*1280,y:Math.random()*720,
+  r:Math.random()*1.1+0.2,a:Math.random(),
+  spd:Math.random()*0.004+0.001,
+  twinkle:Math.random()<0.3
+}));
+let glowPulse=0;
+function drawMaster(){
+  MCX.clearRect(0,0,1280,720);
+  glowPulse+=0.008;
+  // ambient glow behind content
+  const grd=MCX.createRadialGradient(640,360,0,640,360,500);
+  grd.addColorStop(0,`rgba(200,168,75,${0.03+Math.sin(glowPulse)*0.015})`);
+  grd.addColorStop(1,'transparent');
+  MCX.fillStyle=grd;MCX.fillRect(0,0,1280,720);
+  // stars
+  stars.forEach(s=>{
+    s.a+=s.spd*(s.twinkle?1:-1);
+    if(s.a>1){s.a=1;s.spd*=-1;}
+    if(s.a<0.05){s.a=0.05;s.spd*=-1;}
+    MCX.beginPath();MCX.arc(s.x,s.y,s.r,0,Math.PI*2);
+    MCX.fillStyle=`rgba(200,168,75,${(s.a*0.45).toFixed(2)})`;
+    MCX.fill();
+  });
+  requestAnimationFrame(drawMaster);
+}
+drawMaster();
+
+/* ══════════════════════════════════════════
+   SCENE 1 — WORD SLAM
+══════════════════════════════════════════ */
+const slamWords=[
+  {w:'IS',gold:false},
+  {w:'YOUR',gold:false},
+  {w:'SITE',gold:false},
+  {w:'READY?',gold:true}
+];
+let slamIdx=0, slamTimer=null;
+const slEl=document.getElementById('slWord');
+
+function doSlam(){
+  if(slamIdx>=slamWords.length) return;
+  const {w,gold}=slamWords[slamIdx];
+  slEl.textContent=w;
+  slEl.className='slam'+(gold?' gold':'');
+  void slEl.offsetWidth;
+  slEl.classList.add('show');
+  slamTimer=setTimeout(()=>{
+    slEl.classList.remove('show');
+    slEl.classList.add('hide');
+    slamIdx++;
+    setTimeout(()=>{
+      slEl.classList.remove('hide');
+      if(slamIdx<slamWords.length) doSlam();
+    },240);
+  },900);
+}
+
+/* ══════════════════════════════════════════
+   SCENE 2 — CONFESSION: scattered → sentence
+══════════════════════════════════════════ */
+const sentence="MOST WEBSITES LOSE CLIENTS BEFORE THE PAGE EVEN LOADS.";
+const confWords=sentence.split(' ');
+let confParticles=[];
+
+function buildConfession(){
+  const wrap=document.getElementById('confWrap');
+  wrap.innerHTML='';
+  confParticles=[];
+  const ww=1100,wh=400;
+
+  // layout final positions in 2 rows
+  const fontSizes=[52,52,52,52,52,38,38,38,38,38,38];
+  let finalPositions=[];
+  // compute line break manually: words split into 2 lines
+  const line1=["MOST","WEBSITES","LOSE","CLIENTS"];
+  const line2=["BEFORE","THE","PAGE","EVEN","LOADS."];
+
+  const measure=(word,fs)=>{
+    const tmp=document.createElement('span');
+    tmp.style.cssText=\`font-family:'Bebas Neue',sans-serif;font-size:\${fs}px;position:absolute;visibility:hidden;\`;
+    tmp.textContent=word;
+    wrap.appendChild(tmp);
+    const w=tmp.offsetWidth;
+    wrap.removeChild(tmp);
+    return w;
+  };
+
+  const fs1=72,fs2=56,gap=18;
+  let x=0,positions=[];
+  line1.forEach(w=>{
+    const wid=measure(w,fs1);
+    positions.push({word:w,x,y:50,fs:fs1,wid});
+    x+=wid+gap;
+  });
+  const totalW1=x-gap;
+  const off1=(ww-totalW1)/2;
+  positions.forEach(p=>p.x+=off1);
+
+  x=0;
+  line2.forEach(w=>{
+    const wid=measure(w,fs2);
+    positions.push({word:w,x,y:160,fs:fs2,wid});
+    x+=wid+gap;
+  });
+  const totalW2=x-gap;
+  const off2=(ww-totalW2)/2;
+  positions.slice(line1.length).forEach(p=>p.x+=off2);
+
+  positions.forEach(({word,x,y,fs},i)=>{
+    const el=document.createElement('div');
+    el.className='cword';
+    el.textContent=word;
+    el.style.fontSize=fs+'px';
+    // random scatter start
+    const sx=Math.random()*1100-50;
+    const sy=Math.random()*380-40;
+    const sr=(Math.random()-0.5)*360;
+    el.style.left=sx+'px';
+    el.style.top=sy+'px';
+    el.style.transform=\`rotate(\${sr}deg) scale(\${0.4+Math.random()*0.6})\`;
+    el.style.opacity='0';
+    el.style.color=i===positions.length-1?'var(--g)':'var(--white)';
+    wrap.appendChild(el);
+    confParticles.push({el,tx:x,ty:y,sx,sy,sr});
+  });
+}
+
+function animateConfession(){
+  buildConfession();
+  // phase 1: appear scattered (0-1.5s)
+  confParticles.forEach((p,i)=>{
+    setTimeout(()=>{
+      p.el.style.transition='opacity 0.3s ease';
+      p.el.style.opacity='1';
+    },i*60);
+  });
+  // phase 2: converge to sentence (1.8s)
+  setTimeout(()=>{
+    confParticles.forEach((p,i)=>{
+      const delay=i*40;
+      p.el.style.transition=\`left 0.7s cubic-bezier(.16,1,.3,1) \${delay}ms, top 0.7s cubic-bezier(.16,1,.3,1) \${delay}ms, transform 0.7s cubic-bezier(.16,1,.3,1) \${delay}ms\`;
+      p.el.style.left=p.tx+'px';
+      p.el.style.top=p.ty+'px';
+      p.el.style.transform='rotate(0deg) scale(1)';
+    });
+  },1800);
+}
+
+/* ══════════════════════════════════════════
+   SCENE 3 — SHATTER + RISE
+══════════════════════════════════════════ */
+const SC=document.getElementById('shatterCanvas');
+SC.width=1280;SC.height=720;
+const SCX=SC.getContext('2d');
+let shards=[], shatterRunning=false;
+
+function createShards(){
+  shards=[];
+  const count=80;
+  for(let i=0;i<count;i++){
+    const angle=Math.random()*Math.PI*2;
+    const speed=2+Math.random()*8;
+    const size=8+Math.random()*40;
+    shards.push({
+      x:640+(Math.random()-0.5)*300,
+      y:360+(Math.random()-0.5)*80,
+      vx:Math.cos(angle)*speed,
+      vy:Math.sin(angle)*speed-Math.random()*3,
+      rot:Math.random()*360,
+      vrot:(Math.random()-0.5)*12,
+      size,
+      alpha:1,
+      color:Math.random()<0.4?'#C8A84B':'#F5F2EA',
+      pts:generateShardPts(size)
+    });
+  }
+}
+function generateShardPts(sz){
+  const n=3+Math.floor(Math.random()*3);
+  return Array.from({length:n},(_,i)=>{
+    const a=(i/n)*Math.PI*2+Math.random()*0.5;
+    const r=sz*(0.5+Math.random()*0.5);
+    return[Math.cos(a)*r,Math.sin(a)*r];
+  });
+}
+function animateShatter(){
+  shatterRunning=true;
+  function frame(){
+    if(!shatterRunning)return;
+    SCX.clearRect(0,0,1280,720);
+    let allGone=true;
+    shards.forEach(s=>{
+      s.x+=s.vx; s.y+=s.vy;
+      s.vy+=0.18; // gravity
+      s.vx*=0.98;
+      s.rot+=s.vrot;
+      s.alpha-=0.018;
+      if(s.alpha>0){
+        allGone=false;
+        SCX.save();
+        SCX.globalAlpha=Math.max(0,s.alpha);
+        SCX.translate(s.x,s.y);
+        SCX.rotate(s.rot*Math.PI/180);
+        SCX.beginPath();
+        s.pts.forEach(([px,py],i)=>i?SCX.lineTo(px,py):SCX.moveTo(px,py));
+        SCX.closePath();
+        SCX.fillStyle=s.color;
+        SCX.fill();
+        SCX.restore();
+      }
+    });
+    if(!allGone) requestAnimationFrame(frame);
+    else{ SCX.clearRect(0,0,1280,720); shatterRunning=false; }
+  }
+  requestAnimationFrame(frame);
+}
+
+let s3Timeline=null;
+function runScene3(){
+  const st=document.getElementById('shatterText');
+  const rl=document.getElementById('riseLogo');
+  const rtl=rl.querySelector('.rise-tagline');
+  // reset
+  st.style.opacity='0'; st.style.transition='none';
+  rl.style.transform='translate(-50%,-50%) scale(0)';
+  rl.style.opacity='0'; rl.style.transition='none';
+  rtl.style.opacity='0';
+  SCX.clearRect(0,0,1280,720);
+  shatterRunning=false;
+
+  // appear text
+  setTimeout(()=>{
+    st.style.opacity='1';
+  },200);
+  // flash + shatter
+  setTimeout(()=>{
+    st.style.opacity='0';
+    createShards();
+    animateShatter();
+    // screen flash
+    const fl=document.createElement('div');
+    fl.style.cssText='position:absolute;inset:0;background:#fff;opacity:0.55;z-index:50;pointer-events:none;transition:opacity 0.25s ease;';
+    document.getElementById('s3').appendChild(fl);
+    setTimeout(()=>{fl.style.opacity='0';setTimeout(()=>fl.remove(),300);},80);
+  },2200);
+  // logo rises
+  setTimeout(()=>{
+    rl.style.transition='transform 1.1s cubic-bezier(.34,1.2,.64,1), opacity 0.6s ease';
+    rl.style.transform='translate(-50%,-50%) scale(1)';
+    rl.style.opacity='1';
+  },3400);
+  // tagline
+  setTimeout(()=>{ rtl.style.opacity='1'; },4400);
+}
+
+/* ══════════════════════════════════════════
+   HANS ZIMMER-STYLE AUDIO ENGINE
+══════════════════════════════════════════ */
+let AC;
+function initAudio(){ AC=new(window.AudioContext||window.webkitAudioContext)(); }
+
+const BUS=()=>{ const g=AC.createGain();g.gain.value=0.72;g.connect(AC.destination);return g; };
+const REV=()=>{
+  const conv=AC.createConvolver();
+  const len=AC.sampleRate*2.5;
+  const buf=AC.createBuffer(2,len,AC.sampleRate);
+  [0,1].forEach(ch=>{const d=buf.getChannelData(ch);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2);});
+  conv.buffer=buf;return conv;
+};
+
+function tone(freq,type,t,dur,vol,dst,att=0.04,rel){
+  const o=AC.createOscillator(),g=AC.createGain();
+  o.type=type;o.frequency.value=freq;
+  const r=rel||dur;
+  g.gain.setValueAtTime(0,AC.currentTime+t);
+  g.gain.linearRampToValueAtTime(vol,AC.currentTime+t+att);
+  g.gain.setValueAtTime(vol,AC.currentTime+t+dur-r*0.3);
+  g.gain.exponentialRampToValueAtTime(0.0001,AC.currentTime+t+dur);
+  o.connect(g);g.connect(dst);
+  o.start(AC.currentTime+t);o.stop(AC.currentTime+t+dur+0.1);
+}
+function noiseHit(t,dur,vol,freq,dst){
+  const buf=AC.createBuffer(1,Math.floor(AC.sampleRate*dur),AC.sampleRate);
+  const d=buf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+  const s=AC.createBufferSource();s.buffer=buf;
+  const f=AC.createBiquadFilter();f.type='bandpass';f.frequency.value=freq||200;f.Q.value=1;
+  const g=AC.createGain();
+  s.connect(f);f.connect(g);g.connect(dst);
+  g.gain.setValueAtTime(0,AC.currentTime+t);
+  g.gain.linearRampToValueAtTime(vol,AC.currentTime+t+0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001,AC.currentTime+t+dur);
+  s.start(AC.currentTime+t);s.stop(AC.currentTime+t+dur+0.05);
+}
+function hh(t,vol,dst){noiseHit(t,0.04,vol,9000,dst);}
+function kick(t,dst){
+  const o=AC.createOscillator(),g=AC.createGain();
+  o.type='sine';
+  o.frequency.setValueAtTime(200,AC.currentTime+t);
+  o.frequency.exponentialRampToValueAtTime(35,AC.currentTime+t+0.18);
+  g.gain.setValueAtTime(0.8,AC.currentTime+t);
+  g.gain.exponentialRampToValueAtTime(0.0001,AC.currentTime+t+0.25);
+  o.connect(g);g.connect(dst);
+  o.start(AC.currentTime+t);o.stop(AC.currentTime+t+0.3);
+}
+function snare(t,dst){noiseHit(t,0.18,0.4,1400,dst);}
+
+function playScore(){
+  const bus=BUS();
+  const rev=REV();
+  rev.connect(bus);
+  const wet=AC.createGain();wet.gain.value=0.22;wet.connect(rev);
+
+  /* S1: SILENCE → single deep tone → tension stabs (0–6s) */
+  // one low drone note awakens
+  tone(55,'sine',0.8,5,0.07,bus,1.5);
+  tone(55,'sine',0.8,5,0.04,wet,1.5);
+  // high tension strings (sawtooth filtered)
+  [1.5,2.2,3.0,3.7,4.5,5.2].forEach((t,i)=>{
+    const freq=[880,1046,784,932,1046,880][i];
+    tone(freq,'sawtooth',t,0.25,0.06,bus,0.01,0.1);
+    tone(freq,'sawtooth',t,0.25,0.04,wet,0.01,0.1);
+  });
+  // subtle heartbeat
+  [1.0,1.5,2.0,2.5,3.0,3.5,4.0,4.5,5.0].forEach(t=>{ kick(t,bus); });
+
+  /* S2: BUILDING (6–13s) — strings + percussion rises */
+  // kick every beat
+  for(let i=0;i<14;i++) kick(6+i*0.5,bus);
+  // snare on 2s
+  for(let i=0;i<7;i++) snare(7+i*1,bus);
+  // hats
+  for(let i=0;i<28;i++) hh(6+i*0.25,0.05,bus);
+  // rising string chord
+  [220,277,330,370,440].forEach((f,i)=>{
+    tone(f,'sawtooth',6+i*0.1,4,0.035,bus,0.2);
+    tone(f*2,'sawtooth',8+i*0.1,5,0.018,bus,0.3);
+  });
+  // arp upward — builds tension
+  [440,523,659,784,880,1047,1319].forEach((f,i)=>tone(f,'sine',8+i*0.4,1.2,0.055,bus,0.05));
+  [523,659,784,880,1047,1319,1568].forEach((f,i)=>tone(f,'sine',10.5+i*0.3,0.9,0.06,bus,0.04));
+
+  /* S3: SHATTER (13–20s) — IMPACT then rebuild */
+  // giant impact at t=15.2 (shatter moment)
+  const impT=15.2;
+  kick(impT,bus);kick(impT+0.02,bus);kick(impT+0.04,bus);
+  noiseHit(impT,0.4,0.5,300,bus);
+  tone(55,'sawtooth',impT,0.5,0.3,bus,0.01);
+  // silence gap 15.2–16.5
+  // logo rise — gentle swell
+  [164,196,220,247,294].forEach((f,i)=>tone(f,'sine',16.5+i*0.12,3.5,0.06,bus,0.4));
+  [329,392,494,587,740].forEach((f,i)=>tone(f,'sine',17+i*0.1,3,0.04,wet,0.3));
+  // warm melody hint
+  [523,587,659,784,880,784,659].forEach((f,i)=>tone(f,'sine',17.5+i*0.38,0.7,0.065,bus,0.04));
+
+  /* S4: DROP (20–27s) — full cinematic anthem */
+  // massive drop impact
+  [20,20.02,20.04].forEach(t=>kick(t,bus));
+  noiseHit(20,0.2,0.4,250,bus);
+  tone(82,'sawtooth',20,0.6,0.22,bus,0.01);
+
+  // driving groove
+  for(let i=0;i<14;i++){kick(20+i*0.5,bus);}
+  for(let i=0;i<7;i++){snare(20.5+i*1,bus);}
+  for(let i=0;i<28;i++){hh(20+i*0.25,0.07,bus);}
+
+  // SOARING STRINGS — major key triumph
+  [261,329,392,523,659].forEach((f,i)=>tone(f,'sawtooth',20+i*0.04,7,0.042,bus,0.15));
+  [261,329,392,523,659].forEach((f,i)=>tone(f,'sine',20+i*0.04,7,0.03,wet,0.15));
+
+  // heroic melody
+  const heroMel=[523,659,784,880,1047,880,784,659,523,659,784,880,1047,1319];
+  heroMel.forEach((f,i)=>tone(f,'sine',20+i*0.42,0.6,0.075,bus,0.03));
+
+  // bass pulse
+  [82,82,98,110,82,82,110,130,82].forEach((f,i)=>tone(f,'sawtooth',20+i*0.5,0.38,0.18,bus,0.02));
+
+  /* S5: RESOLUTION (27–34s) — triumphant close */
+  // final grand chord
+  [130,164,196,261,329,392,523].forEach((f,i)=>tone(f,'sine',27+i*0.05,7,0.055,bus,0.3));
+  [130,164,196,261,329,392,523].forEach((f,i)=>tone(f,'sine',27+i*0.05,7,0.03,wet,0.3));
+  // logo sting — 4 notes ascending
+  [523,659,784,1047,1319].forEach((f,i)=>tone(f,'sine',27.1+i*0.14,1.4,0.085,bus,0.03));
+  // gentle beat fade
+  for(let i=0;i<8;i++){
+    const v=(8-i)/8;
+    kick(27+i*0.5,bus);
+    hh(27+i*0.5+0.25,0.04*v,bus);
+  }
+  // final swell out
+  [261,329,392,523,659].forEach((f,i)=>tone(f,'sine',29+i*0.2,5,0.04,wet,1));
+}
+
+/* ══════════════════════════════════════════
+   SCENE ENGINE
+══════════════════════════════════════════ */
+const SCENES=['s1','s2','s3','s4','s5'];
+const DUR=[6000,7000,7000,7000,7000];
+const TOTAL=DUR.reduce((a,b)=>a+b,0);
+let cur=0, startTS=null;
+const progEl=document.getElementById('prog');
+
+function activate(i){
+  SCENES.forEach((id,j)=>{
+    const el=document.getElementById(id);
+    el.classList.toggle('active',j===i);
+    el.style.opacity=j===i?'1':'0';
+  });
+  if(i===0){ slamIdx=0; doSlam(); }
+  if(i===1){ animateConfession(); }
+  if(i===2){ runScene3(); }
+}
+
+let lastScene=-1;
+function tick(ts){
+  if(!startTS) startTS=ts;
+  const el=ts-startTS;
+  progEl.style.width=Math.min(el/TOTAL*100,100)+'%';
+  let acc=0;
+  for(let i=0;i<DUR.length;i++){
+    acc+=DUR[i];
+    if(el<acc){
+      if(i!==lastScene){ lastScene=i; activate(i); }
+      break;
+    }
+  }
+  if(el<TOTAL+600) requestAnimationFrame(tick);
+  else setTimeout(()=>{lastScene=-1;cur=0;startTS=null;activate(0);requestAnimationFrame(tick);},1600);
+}
+
+document.getElementById('playBtn').addEventListener('click',()=>{
+  initAudio(); playScore();
+  document.getElementById('gate').style.display='none';
+  document.getElementById('ad').style.display='block';
+  activate(0);
+  requestAnimationFrame(tick);
+});
+</script>
+</body>
+</html>
