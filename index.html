@@ -2,1294 +2,758 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Northstar — The Ad</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600;1,700&family=Tenor+Sans&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Oracle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
-:root{
-  --gold:#C9A84C;
-  --gold2:#E8C97A;
-  --gold3:#8B6820;
-  --cream:#F2EDE4;
-  --ink:#0D0B08;
-  --ink2:#1A1610;
-  --fog:#6B6257;
-  --fog2:#A09890;
-}
-html,body{
-  width:100%;height:100vh;
-  overflow:hidden;background:#000;
-  font-family:'Tenor Sans',sans-serif;
-  cursor:none;
-  min-height:600px;
-}
-
-/* CURSOR */
-#cursor{
-  position:fixed;width:6px;height:6px;
-  background:var(--gold);border-radius:50%;
-  pointer-events:none;z-index:10000;
-  transform:translate(-50%,-50%);
-  mix-blend-mode:screen;
-  transition:width 0.3s,height 0.3s;
-}
-#cursor.big{width:40px;height:40px;opacity:0.15;}
-
-/* PROGRESS */
-#prog{
-  position:fixed;top:0;left:0;height:1px;
-  background:var(--gold);z-index:9998;
-  width:0%;
-  transition:width 0.1s linear;
-}
-
-/* GATE */
-#gate{
-  position:fixed;inset:0;
-  background:var(--ink);
-  display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-  z-index:9999;gap:0;
-}
-.gate-rule{
-  width:1px;height:60px;
-  background:linear-gradient(to bottom,transparent,var(--gold),transparent);
-  margin-bottom:32px;
-  animation:fadein 1s 0.3s both;
-}
-.gate-logo{
-  font-family:'Cormorant Garamond',serif;
-  font-weight:300;font-size:42px;
-  letter-spacing:0.18em;color:var(--cream);
-  animation:fadein 1s 0.5s both;
-}
-.gate-sub{
-  font-size:8px;letter-spacing:1em;
-  color:var(--gold);text-transform:uppercase;
-  margin-top:6px;margin-bottom:56px;
-  animation:fadein 1s 0.7s both;
-}
-#playBtn{
-  font-family:'Tenor Sans',sans-serif;
-  font-size:9px;letter-spacing:0.7em;text-transform:uppercase;
-  color:var(--cream);background:transparent;
-  border:1px solid rgba(201,168,76,0.4);
-  padding:16px 52px;cursor:pointer;
-  transition:all 0.4s;
-  animation:fadein 1s 1s both;
-}
-#playBtn:hover{
-  background:var(--gold);color:var(--ink);
-  border-color:var(--gold);
-  letter-spacing:1em;
-}
-
-/* MAIN STAGE */
-#stage{
-  position:fixed;inset:0;
-  display:none;background:var(--ink);
-  overflow:hidden;
-}
-
-/* PARTICLE CANVAS */
-#particles{
-  position:absolute;inset:0;
-  z-index:0;pointer-events:none;
-}
-
-/* SCENE SYSTEM */
-.scene{
-  position:absolute;inset:0;
-  z-index:2;
-  opacity:0;pointer-events:none;
-  transition:none;
-}
-.scene.active{opacity:1;}
-.scene.in{
-  animation:scene-in 0.6s cubic-bezier(0.16,1,0.3,1) forwards;
-}
-.scene.out{
-  animation:scene-out 0.4s ease-in forwards;
-}
-@keyframes scene-in{
-  from{opacity:0;} to{opacity:1;}
-}
-@keyframes scene-out{
-  from{opacity:1;} to{opacity:0;}
-}
-
-
-/* ══════════════════════════════════════
-   S1 — THE VOID  (0–5s)
-   One question. Black. Silence building.
-══════════════════════════════════════ */
-#s1{
-  display:flex;align-items:center;justify-content:center;
-  background:var(--ink);
-}
-.s1-center{text-align:center;position:relative;}
-
-.s1-q{
-  font-family:'Cormorant Garamond',serif;
-  font-weight:300;font-style:italic;
-  font-size:clamp(32px,5vw,72px);
-  color:var(--cream);
-  letter-spacing:0.02em;line-height:1.2;
-  opacity:0;
-}
-.s1-q .line{
-  display:block;overflow:hidden;
-}
-.s1-q .line span{
-  display:block;
-  animation:wordrise 1s cubic-bezier(0.16,1,0.3,1) both;
-}
-.s1-q .l1 span{animation-delay:0.2s;}
-.s1-q .l2 span{animation-delay:0.5s;font-style:normal;font-weight:600;color:var(--gold2);}
-.s1-q .l3 span{animation-delay:0.8s;}
-.s1-q{opacity:1;}
-
-.s1-cursor-blink{
-  display:inline-block;width:2px;height:0.85em;
-  background:var(--gold);vertical-align:middle;
-  margin-left:3px;
-  animation:blink 1s step-start 1.5s infinite;
-}
-.s1-timestamp{
-  position:absolute;bottom:-60px;left:50%;transform:translateX(-50%);
-  font-family:'DM Mono',monospace;font-size:9px;
-  letter-spacing:0.3em;color:var(--fog);text-transform:uppercase;
-  opacity:0;animation:fadein 1s 1.8s forwards;
-  white-space:nowrap;
-}
-
-
-/* ══════════════════════════════════════
-   S2 — THE HUNT  (5–11s)
-   Dark. A phantom browser.
-   They are searching for you right now.
-══════════════════════════════════════ */
-#s2{background:var(--ink);}
-
-.s2-context{
-  position:absolute;top:0;left:0;right:0;
-  height:44px;
-  background:rgba(255,255,255,0.03);
-  border-bottom:1px solid rgba(201,168,76,0.08);
-  display:flex;align-items:center;padding:0 40px;gap:14px;
-}
-.s2-dots{display:flex;gap:6px;}
-.s2-dot{
-  width:8px;height:8px;border-radius:50%;
-  background:rgba(255,255,255,0.1);
-}
-.s2-url{
-  font-family:'DM Mono',monospace;font-size:10px;
-  color:rgba(255,255,255,0.12);letter-spacing:0.03em;
-  flex:1;text-align:center;
-}
-
-.s2-body{
-  position:absolute;
-  top:44px;left:0;right:0;bottom:0;
-  display:flex;align-items:center;justify-content:center;
-}
-
-.s2-search-col{
-  width:min(680px,88%);
-}
-
-.s2-eyebrow{
-  font-size:9px;letter-spacing:0.7em;color:var(--gold3);
-  text-transform:uppercase;margin-bottom:20px;
-  opacity:0;animation:fadein 0.5s 0.1s forwards;
-}
-
-.s2-bar{
-  background:rgba(255,255,255,0.04);
-  border:1px solid rgba(255,255,255,0.08);
-  height:52px;
-  display:flex;align-items:center;padding:0 22px;gap:14px;
-  opacity:0;animation:fadein 0.4s 0.25s forwards;
-}
-.s2-bar-icon{color:var(--fog2);font-size:16px;}
-.s2-bar-text{
-  font-family:'DM Mono',monospace;
-  font-size:13px;color:rgba(242,237,228,0.8);
-  letter-spacing:0.02em;
-  flex:1;
-}
-.s2-cursor{
-  display:inline-block;width:2px;height:16px;
-  background:var(--cream);vertical-align:middle;
-  animation:blink 0.7s step-start infinite;
-}
-
-.s2-results{margin-top:8px;}
-
-.s2-result{
-  height:52px;
-  display:flex;align-items:center;padding:0 22px;gap:16px;
-  border:1px solid transparent;
-  border-top:none;
-  opacity:0;
-}
-
-.s2-result.empty{
-  border-color:rgba(255,255,255,0.04);
-  background:rgba(255,255,255,0.02);
-  animation:fadein 0.4s 1.6s forwards;
-}
-.s2-result.competitor{
-  background:rgba(255,255,255,0.03);
-  border-color:rgba(255,255,255,0.06);
-  animation:fadein 0.5s 2.4s forwards;
-}
-.s2-result.competitor2{
-  background:rgba(255,255,255,0.02);
-  border-color:rgba(255,255,255,0.04);
-  animation:fadein 0.4s 2.9s forwards;
-}
-
-.res-indicator{
-  width:6px;height:6px;border-radius:50%;
-  flex-shrink:0;
-}
-.res-indicator.empty{background:rgba(255,255,255,0.08);}
-.res-indicator.live{background:var(--gold);}
-.res-indicator.faded{background:rgba(201,168,76,0.3);}
-
-.res-text{font-size:12px;color:var(--fog2);letter-spacing:0.02em;flex:1;}
-.res-text.live{color:rgba(242,237,228,0.7);}
-.res-link{
-  font-family:'DM Mono',monospace;font-size:9px;
-  color:var(--gold3);letter-spacing:0.08em;
-}
-
-.s2-verdict{
-  margin-top:32px;text-align:center;
-  opacity:0;animation:fadein 0.8s 3.4s forwards;
-}
-.s2-verdict-main{
-  font-family:'Cormorant Garamond',serif;
-  font-weight:300;font-size:clamp(22px,3.5vw,38px);
-  color:var(--cream);letter-spacing:0.02em;
-}
-.s2-verdict-main em{
-  font-style:italic;color:var(--gold2);
-}
-.s2-verdict-sub{
-  font-size:9px;letter-spacing:0.5em;
-  color:var(--fog);text-transform:uppercase;
-  margin-top:8px;
-}
-
-
-/* ══════════════════════════════════════
-   S3 — THE NUMBER  (11–17s)
-   Cream. Clean. One number drops.
-   The cost of invisibility.
-══════════════════════════════════════ */
-#s3{background:var(--cream);}
-
-.s3-bar-top{
-  position:absolute;top:0;left:0;right:0;height:2px;
-  background:var(--gold);
-  transform:scaleX(0);transform-origin:left;
-  animation:barslide 0.8s cubic-bezier(0.16,1,0.3,1) 0.1s forwards;
-}
-
-.s3-left{
-  position:absolute;left:0;top:0;bottom:0;
-  width:50%;
-  display:flex;flex-direction:column;
-  justify-content:center;
-  padding:0 6% 0 7%;
-}
-
-.s3-right{
-  position:absolute;right:0;top:0;bottom:0;
-  width:50%;
-  border-left:1px solid rgba(13,11,8,0.08);
-  display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-  padding:0 6%;
-}
-
-.s3-label{
-  font-size:8px;letter-spacing:0.8em;
-  color:var(--gold3);text-transform:uppercase;
-  margin-bottom:16px;
-  opacity:0;animation:fadein 0.5s 0.2s forwards;
-}
-
-.s3-headline{
-  font-family:'Cormorant Garamond',serif;
-  font-weight:300;
-  font-size:clamp(28px,4vw,56px);
-  line-height:1.1;color:var(--ink);
-  letter-spacing:-0.01em;
-}
-.s3-headline .hline{display:block;overflow:hidden;}
-.s3-headline .hline span{
-  display:block;
-  animation:wordrise 0.8s cubic-bezier(0.16,1,0.3,1) both;
-}
-.s3-headline .hl1 span{animation-delay:0.2s;}
-.s3-headline .hl2 span{animation-delay:0.38s;font-style:italic;color:var(--gold3);}
-.s3-headline .hl3 span{animation-delay:0.56s;}
-
-.s3-body{
-  margin-top:24px;
-  font-size:12px;color:var(--fog);line-height:1.9;
-  max-width:360px;
-  opacity:0;animation:fadein 0.6s 1s forwards;
-}
-
-.s3-stat-row{
-  display:flex;gap:0;margin-top:32px;
-  opacity:0;animation:fadein 0.5s 1.3s forwards;
-}
-.s3-stat{
-  padding:16px 24px 16px 0;
-  border-right:1px solid rgba(13,11,8,0.1);
-  margin-right:24px;
-}
-.s3-stat:last-child{border-right:none;margin-right:0;}
-.s3-stat-n{
-  font-family:'Cormorant Garamond',serif;
-  font-weight:600;font-size:32px;
-  color:var(--ink);line-height:1;
-}
-.s3-stat-l{
-  font-size:9px;letter-spacing:0.12em;
-  color:var(--fog);text-transform:uppercase;margin-top:4px;
-}
-
-/* The big number */
-.s3-bignum{
-  font-family:'Cormorant Garamond',serif;
-  font-weight:700;
-  font-size:clamp(80px,14vw,180px);
-  line-height:1;letter-spacing:-0.04em;
-  color:var(--ink);
-  opacity:0;transform:scale(0.6) translateY(20px);
-  animation:numland 0.9s cubic-bezier(0.34,1.4,0.64,1) 0.4s forwards;
-}
-.s3-bignum-sub{
-  font-size:9px;letter-spacing:0.6em;
-  color:var(--fog);text-transform:uppercase;
-  margin-top:12px;
-  opacity:0;animation:fadein 0.5s 0.9s forwards;
-}
-.s3-bignum-desc{
-  font-family:'Cormorant Garamond',serif;
-  font-style:italic;font-size:18px;
-  color:var(--fog2);
-  margin-top:8px;text-align:center;
-  max-width:260px;line-height:1.5;
-  opacity:0;animation:fadein 0.6s 1.1s forwards;
-}
-
-
-/* ══════════════════════════════════════
-   S4 — THE ARRIVAL  (17–24s)
-   Northstar. Full impact. Logo builds.
-   Dark. Gold. The brand lands.
-══════════════════════════════════════ */
-#s4{background:var(--ink);}
-
-.s4-grid-line-h{
-  position:absolute;top:50%;left:0;right:0;height:1px;
-  background:rgba(201,168,76,0.07);
-}
-.s4-grid-line-v{
-  position:absolute;left:50%;top:0;bottom:0;width:1px;
-  background:rgba(201,168,76,0.07);
-}
-
-.s4-left{
-  position:absolute;left:0;top:0;bottom:0;right:50%;
-  display:flex;flex-direction:column;
-  align-items:flex-end;justify-content:center;
-  padding:0 6% 0 0;
-}
-
-.s4-right{
-  position:absolute;left:50%;top:0;bottom:0;right:0;
-  display:flex;flex-direction:column;
-  align-items:flex-start;justify-content:center;
-  padding:0 0 0 6%;
-}
-
-/* Logo construction */
-.s4-compass-wrap{
-  margin-bottom:20px;
-  opacity:0;transform:rotate(-180deg) scale(0.3);
-  animation:compass-in 1.1s cubic-bezier(0.34,1.3,0.64,1) 0.1s forwards;
-}
-@keyframes compass-in{
-  to{opacity:1;transform:rotate(0deg) scale(1);}
-}
-
-.s4-wordmark{
-  font-family:'Cormorant Garamond',serif;
-  font-weight:300;
-  font-size:clamp(40px,6vw,84px);
-  letter-spacing:0.06em;
-  color:var(--cream);
-  line-height:1;
-  overflow:hidden;
-  text-align:right;
-}
-.s4-wordmark-inner{
-  display:block;
-  animation:wordrise 0.9s cubic-bezier(0.16,1,0.3,1) 0.55s both;
-}
-
-.s4-tagline{
-  font-size:8px;letter-spacing:1em;
-  color:var(--gold);text-transform:uppercase;
-  margin-top:8px;text-align:right;
-  opacity:0;animation:fadein 0.5s 1s forwards;
-}
-
-.s4-manifesto{
-  font-family:'Cormorant Garamond',serif;
-  font-style:italic;font-weight:300;
-  font-size:clamp(16px,2.2vw,24px);
-  color:var(--fog2);line-height:1.7;
-  max-width:400px;
-  margin-top:24px;text-align:right;
-  opacity:0;animation:fadein 0.7s 1.3s forwards;
-}
-
-/* Right side — the promise */
-.s4-divider{
-  width:1px;height:0;
-  background:var(--gold);
-  margin-bottom:24px;
-  animation:tallgrow 0.7s cubic-bezier(0.16,1,0.3,1) 0.6s forwards;
-}
-@keyframes tallgrow{to{height:64px;}}
-
-.s4-promise-num{
-  font-family:'Cormorant Garamond',serif;
-  font-weight:700;
-  font-size:clamp(100px,18vw,220px);
-  line-height:0.85;letter-spacing:-0.05em;
-  color:var(--gold);
-  opacity:0;transform:translateX(-24px);
-  animation:slidein-right 0.8s cubic-bezier(0.34,1.2,0.64,1) 0.4s forwards;
-}
-@keyframes slidein-right{to{opacity:1;transform:translateX(0);}}
-
-.s4-promise-label{
-  font-size:8px;letter-spacing:0.7em;
-  color:var(--gold3);text-transform:uppercase;
-  display:flex;align-items:center;gap:12px;
-  margin-top:10px;
-  opacity:0;animation:fadein 0.5s 0.9s forwards;
-}
-.s4-promise-label::before{
-  content:'';display:block;
-  width:24px;height:1px;background:var(--gold3);
-}
-
-.s4-promise-copy{
-  font-family:'Cormorant Garamond',serif;
-  font-size:clamp(16px,2vw,22px);
-  font-weight:300;color:var(--cream);
-  line-height:1.5;margin-top:14px;
-  max-width:360px;
-  opacity:0;animation:fadein 0.6s 1.1s forwards;
-}
-.s4-promise-copy em{font-style:italic;color:var(--gold2);}
-
-
-/* ══════════════════════════════════════
-   S5 — THE PROCESS  (24–31s)
-   Three moments. Clinical. Confident.
-   Each phase lands with weight.
-══════════════════════════════════════ */
-#s5{background:var(--ink);}
-
-.s5-header{
-  position:absolute;top:0;left:0;right:0;
-  height:52px;
-  border-bottom:1px solid rgba(201,168,76,0.08);
-  display:flex;align-items:center;
-  padding:0 6%;
-  justify-content:space-between;
-}
-.s5-header-l{
-  font-family:'Cormorant Garamond',serif;
-  font-style:italic;font-size:16px;
-  color:var(--fog2);
-  opacity:0;animation:fadein 0.4s 0.05s forwards;
-}
-.s5-timer{
-  font-family:'DM Mono',monospace;
-  font-size:12px;color:var(--gold2);
-  letter-spacing:0.15em;
-}
-
-.s5-phases{
-  position:absolute;
-  top:52px;left:0;right:0;bottom:0;
-  display:grid;grid-template-columns:1fr 1fr 1fr;
-}
-
-.phase{
-  padding:clamp(24px,5%,56px) clamp(24px,5%,60px);
-  border-right:1px solid rgba(201,168,76,0.07);
-  position:relative;overflow:hidden;
-}
-.phase:last-child{border-right:none;}
-
-/* Vertical timeline bar */
-.phase::before{
-  content:'';position:absolute;
-  left:clamp(23px,4.8%,58px);top:0;
-  width:1px;height:0;
-  background:linear-gradient(to bottom,var(--gold),transparent);
-  opacity:0.5;
-}
-.phase:nth-child(1)::before{animation:linedown 0.9s cubic-bezier(0.16,1,0.3,1) 0.1s forwards;}
-.phase:nth-child(2)::before{animation:linedown 0.9s cubic-bezier(0.16,1,0.3,1) 0.4s forwards;}
-.phase:nth-child(3)::before{animation:linedown 0.9s cubic-bezier(0.16,1,0.3,1) 0.7s forwards;}
-
-.phase-dot{
-  width:8px;height:8px;border-radius:50%;
-  border:1px solid var(--gold);
-  margin-bottom:clamp(16px,3%,32px);
-  position:relative;z-index:1;
-  opacity:0;
-}
-.phase:nth-child(1) .phase-dot{animation:fadein 0.3s 0.5s forwards;}
-.phase:nth-child(2) .phase-dot{animation:fadein 0.3s 0.8s forwards;}
-.phase:nth-child(3) .phase-dot{animation:fadein 0.3s 1.1s forwards;}
-
-.phase-num{
-  font-family:'Cormorant Garamond',serif;
-  font-weight:600;
-  font-size:clamp(60px,10vw,120px);
-  line-height:1;letter-spacing:-0.03em;
-  margin-bottom:8px;
-  opacity:0;transform:translateY(16px);
-}
-.phase:nth-child(1) .phase-num{color:var(--gold2);animation:slideup 0.6s cubic-bezier(0.16,1,0.3,1) 0.45s forwards;}
-.phase:nth-child(2) .phase-num{color:var(--fog2);animation:slideup 0.6s cubic-bezier(0.16,1,0.3,1) 0.75s forwards;}
-.phase:nth-child(3) .phase-num{color:var(--cream);animation:slideup 0.6s cubic-bezier(0.16,1,0.3,1) 1.05s forwards;}
-
-.phase-unit{
-  font-size:9px;letter-spacing:0.5em;text-transform:uppercase;
-  margin-bottom:20px;opacity:0;
-}
-.phase:nth-child(1) .phase-unit{color:var(--gold3);animation:fadein 0.4s 0.85s forwards;}
-.phase:nth-child(2) .phase-unit{color:var(--fog);animation:fadein 0.4s 1.15s forwards;}
-.phase:nth-child(3) .phase-unit{color:var(--fog2);animation:fadein 0.4s 1.45s forwards;}
-
-.phase-rule{
-  width:0;height:1px;
-  background:var(--gold);margin-bottom:14px;
-}
-.phase:nth-child(1) .phase-rule{animation:widen 0.5s ease 0.8s forwards;}
-.phase:nth-child(2) .phase-rule{animation:widen 0.5s ease 1.1s forwards;}
-.phase:nth-child(3) .phase-rule{animation:widen 0.5s ease 1.4s forwards;}
-
-.phase-name{
-  font-family:'Tenor Sans',sans-serif;
-  font-size:clamp(10px,1.2vw,13px);
-  letter-spacing:0.15em;text-transform:uppercase;
-  color:var(--cream);margin-bottom:10px;
-  opacity:0;
-}
-.phase:nth-child(1) .phase-name{animation:fadein 0.4s 0.95s forwards;}
-.phase:nth-child(2) .phase-name{animation:fadein 0.4s 1.25s forwards;}
-.phase:nth-child(3) .phase-name{animation:fadein 0.4s 1.55s forwards;}
-
-.phase-desc{
-  font-size:clamp(10px,1.1vw,12px);
-  color:var(--fog);line-height:1.9;
-  letter-spacing:0.02em;opacity:0;
-}
-.phase:nth-child(1) .phase-desc{animation:fadein 0.5s 1.1s forwards;}
-.phase:nth-child(2) .phase-desc{animation:fadein 0.5s 1.4s forwards;}
-.phase:nth-child(3) .phase-desc{animation:fadein 0.5s 1.7s forwards;}
-
-
-/* ══════════════════════════════════════
-   S6 — THE CLOSE  (31–42s)
-   Everything culminates here.
-   Cream. Silence. Confidence.
-══════════════════════════════════════ */
-#s6{background:var(--cream);}
-
-.s6-top-rule{
-  position:absolute;top:0;left:0;right:0;height:2px;
-  background:var(--gold);
-  transform:scaleX(0);transform-origin:left;
-  animation:barslide 1s cubic-bezier(0.16,1,0.3,1) 0.1s forwards;
-}
-.s6-bottom-rule{
-  position:absolute;bottom:0;left:0;right:0;height:2px;
-  background:var(--gold);opacity:0.3;
-  transform:scaleX(0);transform-origin:right;
-  animation:barslide 1s cubic-bezier(0.16,1,0.3,1) 0.4s forwards;
-}
-
-.s6-content{
-  position:absolute;inset:0;
-  display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-  gap:0;
-}
-
-.s6-pre{
-  font-size:8px;letter-spacing:0.9em;
-  color:var(--gold3);text-transform:uppercase;
-  margin-bottom:28px;
-  opacity:0;animation:fadein 0.6s 0.5s forwards;
-}
-
-.s6-logo{
-  display:flex;align-items:center;gap:16px;
-  margin-bottom:48px;
-  opacity:0;transform:translateY(-12px);
-  animation:dropland 0.8s cubic-bezier(0.16,1,0.3,1) 0.6s forwards;
-}
-.s6-logoname{
-  font-family:'Cormorant Garamond',serif;
-  font-weight:300;font-size:clamp(28px,4vw,44px);
-  letter-spacing:0.12em;color:var(--ink);
-}
-
-.s6-headline{
-  font-family:'Cormorant Garamond',serif;
-  font-weight:300;text-align:center;
-  margin-bottom:40px;
-}
-.hrow{display:block;overflow:hidden;}
-.hrow span{
-  display:block;
-  font-size:clamp(48px,8vw,100px);
-  line-height:0.92;color:var(--ink);
-  letter-spacing:-0.02em;
-}
-.hrow span em{font-style:italic;color:var(--gold3);}
-.hrow:nth-child(1) span{animation:wordrise 0.9s cubic-bezier(0.16,1,0.3,1) 0.85s both;}
-.hrow:nth-child(2) span{animation:wordrise 0.9s cubic-bezier(0.16,1,0.3,1) 1.0s both;}
-.hrow:nth-child(3) span{animation:wordrise 0.9s cubic-bezier(0.16,1,0.3,1) 1.15s both;}
-
-.s6-sep{
-  width:0;height:1px;background:var(--gold);
-  animation:widen2 0.9s ease 1.5s forwards;
-  margin-bottom:36px;
-}
-
-.s6-contact{
-  text-align:center;
-  opacity:0;animation:fadein 0.7s 1.8s forwards;
-}
-.s6-phone{
-  font-family:'Cormorant Garamond',serif;
-  font-weight:300;
-  font-size:clamp(22px,4vw,44px);
-  letter-spacing:0.1em;color:var(--ink);
-  line-height:1;
-}
-.s6-domain{
-  font-family:'DM Mono',monospace;
-  font-size:9px;letter-spacing:0.7em;
-  color:var(--fog);text-transform:uppercase;
-  margin-top:8px;
-}
-
-.s6-footnote{
-  position:absolute;bottom:clamp(16px,4%,52px);
-  left:0;right:0;
-  display:flex;align-items:center;justify-content:center;
-  gap:clamp(20px,5%,56px);
-  opacity:0;animation:fadein 0.6s 2.3s forwards;
-}
-.fn-item{
-  font-family:'DM Mono',monospace;
-  font-size:8px;color:var(--fog2);
-  letter-spacing:0.3em;text-transform:uppercase;
-  display:flex;align-items:center;gap:8px;
-}
-.fn-item::before{
-  content:'';display:block;
-  width:4px;height:4px;border-radius:50%;
-  background:var(--gold);opacity:0.6;
-}
-
-
-/* SHARED ANIMATIONS */
-@keyframes fadein{from{opacity:0;}to{opacity:1;}}
-@keyframes wordrise{to{transform:translateY(0);opacity:1;}from{transform:translateY(105%);opacity:0;}}
-@keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
-@keyframes barslide{to{transform:scaleX(1);}}
-@keyframes numland{to{opacity:1;transform:scale(1) translateY(0);}}
-@keyframes dropland{to{opacity:1;transform:translateY(0);}}
-@keyframes slideup{to{opacity:1;transform:translateY(0);}}
-@keyframes linedown{to{height:100%;}}
-@keyframes widen{to{width:32px;}}
-@keyframes widen2{to{width:120px;}}
-@keyframes tallgrow{to{height:64px;}}
-
-/* RESPONSIVE */
-@media(max-width:700px){
-  .s3-left,.s3-right,.s4-left,.s4-right{position:relative;width:100%;padding:5% 6%;}
-  #s3,#s4{display:flex;flex-direction:column;justify-content:center;}
-  .s3-right{border-left:none;border-top:1px solid rgba(13,11,8,0.08);}
-  .s4-right{border-left:none;}
-  .s4-manifesto{text-align:left;}
-  .s4-wordmark{text-align:left;}
-  .s4-tagline{text-align:left;}
-  .s4-divider{display:none;}
-  .s5-phases{grid-template-columns:1fr;}
-  .phase{border-right:none;border-bottom:1px solid rgba(201,168,76,0.07);padding:24px 6%;}
-  .phase::before{display:none;}
-  .phase-num{font-size:clamp(40px,12vw,80px);}
-  .s6-headline .hrow span{font-size:clamp(36px,10vw,80px);}
-  .s5-header{padding:0 4%;}
-  .s6-footnote{flex-direction:column;gap:8px;}
-}
+  :root{
+    --void: #0f0a1e;
+    --surface: #1a1230;
+    --surface-2: #241a3d;
+    --gold: #c9a876;
+    --gold-bright: #e0c48f;
+    --mystic: #9b7fd4;
+    --parchment: #f2ead6;
+    --parchment-dim: #b8ae9e;
+    --rose: #e8546b;
+  }
+
+  *{ margin:0; padding:0; box-sizing:border-box; }
+
+  html, body{
+    background: var(--void);
+    color: var(--parchment);
+    font-family: 'Space Grotesk', sans-serif;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  body{
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  /* ambient starfield */
+  #stars{
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .star{
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: var(--parchment);
+    border-radius: 50%;
+    opacity: 0.5;
+    animation: twinkle 4s ease-in-out infinite;
+  }
+  @keyframes twinkle{
+    0%, 100% { opacity: 0.15; }
+    50% { opacity: 0.8; }
+  }
+
+  .glow{
+    position: fixed;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(155,127,212,0.15) 0%, rgba(155,127,212,0) 70%);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .stage{
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 560px;
+  }
+
+  .screen{
+    display: none;
+    animation: rise 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .screen.active{ display: block; }
+
+  @keyframes rise{
+    from{ opacity: 0; transform: translateY(18px); }
+    to{ opacity: 1; transform: translateY(0); }
+  }
+
+  .eyebrow{
+    font-size: 12px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold);
+    text-align: center;
+    margin-bottom: 18px;
+    font-weight: 500;
+  }
+
+  h1{
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    text-align: center;
+    color: var(--parchment);
+    line-height: 1.05;
+  }
+
+  /* ---------- LANDING ---------- */
+  #screen-landing h1{
+    font-size: clamp(42px, 9vw, 64px);
+    margin-bottom: 20px;
+  }
+  #screen-landing .sigil{
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 28px;
+    position: relative;
+  }
+  .sigil svg{ width: 100%; height: 100%; }
+
+  #screen-landing p.sub{
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 20px;
+    color: var(--parchment-dim);
+    text-align: center;
+    max-width: 420px;
+    margin: 0 auto 40px;
+    line-height: 1.5;
+  }
+
+  .btn{
+    display: block;
+    margin: 0 auto;
+    background: linear-gradient(135deg, var(--mystic), #7a5fc0);
+    color: var(--parchment);
+    border: none;
+    padding: 16px 38px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    box-shadow: 0 8px 24px rgba(155,127,212,0.35);
+  }
+  .btn:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(155,127,212,0.5);
+  }
+  .btn:active{ transform: translateY(0); }
+  .btn:focus-visible{ outline: 2px solid var(--gold-bright); outline-offset: 3px; }
+
+  .btn-ghost{
+    background: transparent;
+    border: 1px solid rgba(201,168,118,0.4);
+    box-shadow: none;
+    color: var(--gold-bright);
+  }
+  .btn-ghost:hover{
+    background: rgba(201,168,118,0.08);
+    box-shadow: none;
+  }
+
+  /* ---------- QUESTIONS ---------- */
+  .q-card{
+    background: var(--surface);
+    border: 1px solid rgba(201,168,118,0.15);
+    border-radius: 20px;
+    padding: 40px 36px;
+  }
+
+  .progress{
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    margin-bottom: 28px;
+  }
+  .progress span{
+    width: 28px;
+    height: 3px;
+    border-radius: 2px;
+    background: rgba(201,168,118,0.2);
+    transition: background 0.3s ease;
+  }
+  .progress span.done{ background: var(--gold); }
+
+  .q-label{
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    text-align: center;
+    margin-bottom: 10px;
+  }
+
+  .q-title{
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    font-weight: 500;
+    text-align: center;
+    margin-bottom: 28px;
+    line-height: 1.3;
+  }
+
+  input[type="text"]{
+    width: 100%;
+    background: var(--void);
+    border: 1px solid rgba(201,168,118,0.25);
+    border-radius: 12px;
+    padding: 14px 18px;
+    color: var(--parchment);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 16px;
+    text-align: center;
+  }
+  input[type="text"]:focus{
+    outline: none;
+    border-color: var(--mystic);
+  }
+  input[type="text"]::placeholder{ color: var(--parchment-dim); opacity: 0.5; }
+
+  .choices{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .choices.single-col{ grid-template-columns: 1fr; }
+  .choice-btn{
+    background: var(--void);
+    border: 1px solid rgba(201,168,118,0.2);
+    border-radius: 12px;
+    padding: 14px 12px;
+    color: var(--parchment);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+  }
+  .choice-btn:hover{
+    border-color: var(--mystic);
+    background: rgba(155,127,212,0.1);
+  }
+  .choice-btn.selected{
+    border-color: var(--gold);
+    background: rgba(201,168,118,0.15);
+    color: var(--gold-bright);
+  }
+  .choice-btn:focus-visible{ outline: 2px solid var(--gold-bright); outline-offset: 2px; }
+
+  .q-nav{
+    margin-top: 28px;
+    display: flex;
+    justify-content: center;
+  }
+  .q-nav .btn{ padding: 13px 32px; font-size: 14px; }
+  .q-nav .btn:disabled{
+    opacity: 0.35;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+  }
+
+  /* ---------- LOADING ---------- */
+  #screen-loading{
+    text-align: center;
+  }
+  .card-flipper{
+    width: 140px;
+    height: 220px;
+    margin: 0 auto 36px;
+    perspective: 1000px;
+  }
+  .flip-card{
+    width: 100%;
+    height: 100%;
+    position: relative;
+    animation: flip 1.1s cubic-bezier(0.4, 0.1, 0.3, 1) infinite;
+    transform-style: preserve-3d;
+  }
+  @keyframes flip{
+    0%   { transform: rotateY(0deg); }
+    50%  { transform: rotateY(180deg); }
+    100% { transform: rotateY(360deg); }
+  }
+  .flip-face{
+    position: absolute;
+    inset: 0;
+    border-radius: 12px;
+    backface-visibility: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--gold);
+  }
+  .flip-front{
+    background: linear-gradient(145deg, var(--surface-2), var(--surface));
+  }
+  .flip-back{
+    background: linear-gradient(145deg, var(--mystic), #6f56ad);
+    transform: rotateY(180deg);
+  }
+  .flip-face svg{ width: 48px; height: 48px; opacity: 0.85; }
+
+  .loading-text{
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 20px;
+    color: var(--parchment-dim);
+    height: 28px;
+  }
+
+  .loading-bar{
+    width: 200px;
+    height: 2px;
+    background: rgba(201,168,118,0.2);
+    margin: 24px auto 0;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .loading-bar-fill{
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--gold), var(--mystic));
+    transition: width 3.4s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  /* ---------- REVEAL ---------- */
+  #screen-reveal .reveal-card{
+    background: linear-gradient(165deg, var(--surface-2), var(--surface));
+    border: 1px solid rgba(201,168,118,0.25);
+    border-radius: 24px;
+    padding: 44px 38px 36px;
+    position: relative;
+    overflow: hidden;
+  }
+  #screen-reveal .reveal-card::before{
+    content: '';
+    position: absolute;
+    top: -60px;
+    right: -60px;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(155,127,212,0.25), transparent 70%);
+    pointer-events: none;
+  }
+
+  .card-name{
+    font-size: 12px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold);
+    text-align: center;
+    margin-bottom: 6px;
+  }
+
+  .reveal-title{
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 34px;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 24px;
+    color: var(--gold-bright);
+  }
+
+  .reveal-body{
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    line-height: 1.65;
+    color: var(--parchment);
+    text-align: center;
+    position: relative;
+    z-index: 1;
+  }
+  .reveal-body strong{
+    color: var(--rose);
+    font-weight: 600;
+    font-style: italic;
+  }
+  .reveal-body p{ margin-bottom: 16px; }
+  .reveal-body p:last-child{ margin-bottom: 0; }
+
+  .reveal-actions{
+    margin-top: 32px;
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .reveal-actions .btn{ padding: 13px 26px; font-size: 14px; margin: 0; }
+
+  footer-note{ display:none; }
+  .fine-print{
+    text-align: center;
+    font-size: 12px;
+    color: var(--parchment-dim);
+    opacity: 0.5;
+    margin-top: 28px;
+  }
+
+  #confetti-layer{
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 5;
+  }
+
+  @media (max-width: 480px){
+    .q-card{ padding: 32px 22px; }
+    .reveal-card{ padding: 34px 22px 28px; }
+    .choices{ grid-template-columns: 1fr; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+  }
 </style>
 </head>
 <body>
 
-<div id="cursor"></div>
-<div id="prog"></div>
+<div id="stars"></div>
+<div class="glow"></div>
+<div id="confetti-layer"></div>
 
-<!-- GATE -->
-<div id="gate">
-  <div class="gate-rule"></div>
-  <div class="gate-logo">Northstar</div>
-  <div class="gate-sub">Web Studio · Mumbai</div>
-  <button id="playBtn">▶ &nbsp; Play Film</button>
+<div class="stage">
+
+  <!-- LANDING -->
+  <section id="screen-landing" class="screen active">
+    <div class="sigil">
+      <svg viewBox="0 0 100 100" fill="none">
+        <circle cx="50" cy="50" r="46" stroke="#c9a876" stroke-width="1"/>
+        <path d="M50 8 L50 92 M8 50 L92 50" stroke="#9b7fd4" stroke-width="1" opacity="0.6"/>
+        <path d="M50 20 L76 65 L24 65 Z" stroke="#e0c48f" stroke-width="1.2" fill="none"/>
+        <circle cx="50" cy="50" r="6" fill="#9b7fd4"/>
+      </svg>
+    </div>
+    <div class="eyebrow">A Small, Unnecessary, Handmade Thing</div>
+    <h1>The Oracle Has<br>Been Built For You</h1>
+    <p class="sub">Not bought. Not templated. Coded from scratch, apparently, because that's a normal thing to do when someone's name is Tvissha.</p>
+    <button class="btn" onclick="goTo('quiz')">Consult the Oracle →</button>
+  </section>
+
+  <!-- QUESTIONS -->
+  <section id="screen-quiz" class="screen">
+    <div class="q-card">
+      <div class="progress" id="progressDots"></div>
+      <div id="questionMount"></div>
+    </div>
+  </section>
+
+  <!-- LOADING -->
+  <section id="screen-loading" class="screen">
+    <div class="eyebrow">Reading the Signs</div>
+    <div class="card-flipper">
+      <div class="flip-card">
+        <div class="flip-face flip-front">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#c9a876" stroke-width="1.3"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18" stroke-opacity="0.5"/></svg>
+        </div>
+        <div class="flip-face flip-back">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#f2ead6" stroke-width="1.3"><path d="M12 2l2.4 7.2H22l-6 4.6 2.3 7.2L12 16.4l-6.3 4.6 2.3-7.2-6-4.6h7.6z"/></svg>
+        </div>
+      </div>
+    </div>
+    <div class="loading-text" id="loadingText">Consulting the stars...</div>
+    <div class="loading-bar"><div class="loading-bar-fill" id="loadingFill"></div></div>
+  </section>
+
+  <!-- REVEAL -->
+  <section id="screen-reveal" class="screen">
+    <div class="reveal-card">
+      <div class="card-name" id="cardName">THE ORACLE SPEAKS</div>
+      <div class="reveal-title" id="revealTitle">Your Fortune</div>
+      <div class="reveal-body" id="revealBody"></div>
+    </div>
+    <div class="reveal-actions">
+      <button class="btn btn-ghost" onclick="reroll()">Ask Again ↻</button>
+      <button class="btn" id="shareBtn" onclick="celebrate()">✦ Accept My Fate</button>
+    </div>
+    <div class="fine-print">98.6% scientifically unverifiable. 100% made with intent.</div>
+  </section>
+
 </div>
 
-<!-- STAGE -->
-<div id="stage">
-  <canvas id="particles"></canvas>
-
-  <!-- S1: THE VOID -->
-  <div class="scene" id="s1">
-    <div class="s1-center">
-      <div class="s1-q">
-        <div class="line l1"><span>When did you last</span></div>
-        <div class="line l2"><span>lose a customer<span class="s1-cursor-blink"></span></span></div>
-        <div class="line l3"><span>you never even knew you had?</span></div>
-      </div>
-      <div class="s1-timestamp">Right now &nbsp;·&nbsp; Someone is searching &nbsp;·&nbsp; They won't find you</div>
-    </div>
-  </div>
-
-  <!-- S2: THE HUNT -->
-  <div class="scene" id="s2">
-    <div class="s2-context">
-      <div class="s2-dots">
-        <div class="s2-dot" style="background:rgba(255,80,80,0.3)"></div>
-        <div class="s2-dot" style="background:rgba(255,160,40,0.3)"></div>
-        <div class="s2-dot" style="background:rgba(80,180,80,0.3)"></div>
-      </div>
-      <div class="s2-url">google.com/search</div>
-    </div>
-    <div class="s2-body">
-      <div class="s2-search-col">
-        <div class="s2-eyebrow">What your next client sees right now</div>
-        <div class="s2-bar">
-          <div class="s2-bar-icon">⌕</div>
-          <div class="s2-bar-text"><span id="typed-text"></span><span class="s2-cursor"></span></div>
-        </div>
-        <div class="s2-results">
-          <div class="s2-result empty">
-            <div class="res-indicator empty"></div>
-            <div class="res-text">No results found for this business</div>
-            <div class="res-link" style="color:var(--fog);">—</div>
-          </div>
-          <div class="s2-result competitor">
-            <div class="res-indicator live"></div>
-            <div class="res-text live">Your Competitor · Premium Services · Mumbai</div>
-            <div class="res-link">Visit →</div>
-          </div>
-          <div class="s2-result competitor2">
-            <div class="res-indicator faded"></div>
-            <div class="res-text" style="color:var(--fog);">Another Competitor · Est. 2019 · Mumbai</div>
-            <div class="res-link" style="color:var(--fog2);">Visit →</div>
-          </div>
-        </div>
-        <div class="s2-verdict">
-          <div class="s2-verdict-main">They chose <em>someone else.</em></div>
-          <div class="s2-verdict-sub">This happens to you — hundreds of times — every day</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- S3: THE NUMBER -->
-  <div class="scene" id="s3">
-    <div class="s3-bar-top"></div>
-    <div class="s3-left">
-      <div class="s3-label">The cost of no website</div>
-      <div class="s3-headline">
-        <div class="hline hl1"><span>Every hour</span></div>
-        <div class="hline hl2"><span>you are invisible,</span></div>
-        <div class="hline hl3"><span>you are losing.</span></div>
-      </div>
-      <div class="s3-body">
-        73% of customers research a business online before contacting them. Without a website, you don't exist. You are handing revenue to your competitors — politely, daily, invisibly.
-      </div>
-      <div class="s3-stat-row">
-        <div class="s3-stat">
-          <div class="s3-stat-n">73%</div>
-          <div class="s3-stat-l">distrust no-website businesses</div>
-        </div>
-        <div class="s3-stat">
-          <div class="s3-stat-n">8 sec</div>
-          <div class="s3-stat-l">before they move on</div>
-        </div>
-      </div>
-    </div>
-    <div class="s3-right">
-      <div class="s3-bignum">₹2,400</div>
-      <div class="s3-bignum-sub">Average · Per Day · Lost</div>
-      <div class="s3-bignum-desc">Revenue that walked past your door and into someone else's.</div>
-    </div>
-  </div>
-
-  <!-- S4: THE ARRIVAL -->
-  <div class="scene" id="s4">
-    <div class="s4-grid-line-h"></div>
-    <div class="s4-grid-line-v"></div>
-    <div class="s4-left">
-      <div class="s4-compass-wrap">
-        <svg width="56" height="56" viewBox="0 0 44 44" fill="none">
-          <path d="M22 2 L27 19 L22 16 L17 19 Z" fill="#C9A84C"/>
-          <path d="M42 22 L25 17 L28 22 L25 27 Z" fill="#8B6820"/>
-          <path d="M22 42 L17 25 L22 28 L27 25 Z" fill="#8B6820"/>
-          <path d="M2 22 L19 27 L16 22 L19 17 Z" fill="#E8C97A"/>
-        </svg>
-      </div>
-      <div class="s4-wordmark">
-        <span class="s4-wordmark-inner">Northstar</span>
-      </div>
-      <div class="s4-tagline">Web Studio · Mumbai · India</div>
-      <div class="s4-manifesto">
-        We don't build websites.<br>
-        We build the version of your business<br>
-        that the world deserves to see.
-      </div>
-    </div>
-    <div class="s4-right">
-      <div class="s4-divider"></div>
-      <div class="s4-promise-num">24</div>
-      <div class="s4-promise-label">Hours. Brief to live.</div>
-      <div class="s4-promise-copy">
-        Not a quote. Not a proposal. Not next month.<br>
-        <em>Tomorrow morning, you are found.</em>
-      </div>
-    </div>
-  </div>
-
-  <!-- S5: THE PROCESS -->
-  <div class="scene" id="s5">
-    <div class="s5-header">
-      <div class="s5-header-l">How your next 24 hours unfold</div>
-      <div class="s5-timer" id="s5-timer">24:00:00</div>
-    </div>
-    <div class="s5-phases">
-      <div class="phase">
-        <div class="phase-dot"></div>
-        <div class="phase-num">1</div>
-        <div class="phase-unit">Hour</div>
-        <div class="phase-rule"></div>
-        <div class="phase-name">Direction</div>
-        <div class="phase-desc">You share your vision. We lock the aesthetic, voice, and structure. One session. No committees. No revisions spiral. A direction so clear it feels obvious — in hindsight.</div>
-      </div>
-      <div class="phase">
-        <div class="phase-dot"></div>
-        <div class="phase-num">8</div>
-        <div class="phase-unit">Hours</div>
-        <div class="phase-rule"></div>
-        <div class="phase-name">Creation</div>
-        <div class="phase-desc">We build. Mobile-first. Lightning fast. Every pixel earns its place. You watch the site take shape through live previews. Speed is not compromise — it is discipline.</div>
-      </div>
-      <div class="phase">
-        <div class="phase-dot"></div>
-        <div class="phase-num">24</div>
-        <div class="phase-unit">Hours</div>
-        <div class="phase-rule"></div>
-        <div class="phase-name">Live. Found.</div>
-        <div class="phase-desc">QA, DNS, launch. Your site is live. You are found. The client who was searching for you — who found your competitor yesterday — finds you today. This is what 24 hours can change.</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- S6: THE CLOSE -->
-  <div class="scene" id="s6">
-    <div class="s6-top-rule"></div>
-    <div class="s6-bottom-rule"></div>
-    <div class="s6-content">
-      <div class="s6-pre">Northstar Web · Mumbai</div>
-      <div class="s6-logo">
-        <svg width="40" height="40" viewBox="0 0 44 44" fill="none">
-          <path d="M22 2 L27 19 L22 16 L17 19 Z" fill="#C9A84C"/>
-          <path d="M42 22 L25 17 L28 22 L25 27 Z" fill="#8B6820"/>
-          <path d="M22 42 L17 25 L22 28 L27 25 Z" fill="#8B6820"/>
-          <path d="M2 22 L19 27 L16 22 L19 17 Z" fill="#E8C97A"/>
-        </svg>
-        <div class="s6-logoname">Northstar</div>
-      </div>
-      <div class="s6-headline">
-        <div class="hrow"><span>Your website.</span></div>
-        <div class="hrow"><span>Tomorrow morning.</span></div>
-        <div class="hrow"><span><em>Guaranteed.</em></span></div>
-      </div>
-      <div class="s6-sep"></div>
-      <div class="s6-contact">
-        <div class="s6-phone">+91 77384 86780</div>
-        <div class="s6-domain">northstarweb.in</div>
-      </div>
-    </div>
-    <div class="s6-footnote">
-      <div class="fn-item">Taking new clients now</div>
-      <div class="fn-item">₹5,000 starter · 24hr turnaround</div>
-      <div class="fn-item">Mumbai · India</div>
-    </div>
-  </div>
-
-</div><!-- end stage -->
-
 <script>
-/* ─── CURSOR ─── */
-const curEl = document.getElementById('cursor');
-document.addEventListener('mousemove', e => {
-  curEl.style.left = e.clientX + 'px';
-  curEl.style.top  = e.clientY + 'px';
-});
-document.addEventListener('mousedown', () => curEl.classList.add('big'));
-document.addEventListener('mouseup',   () => curEl.classList.remove('big'));
-
-/* ─── PARTICLES ─── */
-const pc = document.getElementById('particles');
-function resizePC() { pc.width = window.innerWidth; pc.height = window.innerHeight; }
-resizePC();
-window.addEventListener('resize', resizePC);
-const pctx = pc.getContext('2d');
-
-const particles = Array.from({length: 60}, () => ({
-  x: Math.random() * pc.width,
-  y: Math.random() * pc.height,
-  vx: (Math.random() - 0.5) * 0.18,
-  vy: (Math.random() - 0.5) * 0.14,
-  size: Math.random() * 1.2 + 0.3,
-  opacity: Math.random() * 0.25 + 0.05,
-  color: Math.random() > 0.6 ? '#C9A84C' : '#F2EDE4'
-}));
-
-function drawParticles() {
-  pctx.clearRect(0, 0, pc.width, pc.height);
-  particles.forEach(p => {
-    p.x += p.vx; p.y += p.vy;
-    if (p.x < 0) p.x = pc.width;
-    if (p.x > pc.width) p.x = 0;
-    if (p.y < 0) p.y = pc.height;
-    if (p.y > pc.height) p.y = 0;
-    pctx.beginPath();
-    pctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-    pctx.fillStyle = p.color;
-    pctx.globalAlpha = p.opacity;
-    pctx.fill();
-  });
-  pctx.globalAlpha = 1;
-  requestAnimationFrame(drawParticles);
-}
-drawParticles();
-
-/* ─── TYPEWRITER (S2) ─── */
-function startTyping() {
-  const el = document.getElementById('typed-text');
-  if (!el) return;
-  const text = 'best web designer mumbai near me';
-  let i = 0;
-  el.textContent = '';
-  const iv = setInterval(() => {
-    if (i < text.length) { el.textContent += text[i]; i++; }
-    else clearInterval(iv);
-  }, 55);
+/* ---------------- Starfield ---------------- */
+const starsContainer = document.getElementById('stars');
+for(let i=0;i<70;i++){
+  const s = document.createElement('div');
+  s.className = 'star';
+  s.style.left = Math.random()*100+'%';
+  s.style.top = Math.random()*100+'%';
+  s.style.animationDelay = (Math.random()*4)+'s';
+  s.style.width = s.style.height = (Math.random()*2+1)+'px';
+  starsContainer.appendChild(s);
 }
 
-/* ─── S5 COUNTDOWN TIMER ─── */
-let s5StartTime = null;
-function updateS5Timer(now) {
-  if (!s5StartTime) return;
-  const elapsed = Math.floor((now - s5StartTime) / 1000);
-  const remaining = Math.max(0, 86400 - elapsed);
-  const h = String(Math.floor(remaining / 3600)).padStart(2, '0');
-  const m = String(Math.floor((remaining % 3600) / 60)).padStart(2, '0');
-  const s = String(remaining % 60).padStart(2, '0');
-  const el = document.getElementById('s5-timer');
-  if (el) el.textContent = `${h}:${m}:${s}`;
+/* ---------------- Navigation ---------------- */
+function goTo(id){
+  document.querySelectorAll('.screen').forEach(el=>el.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
 }
 
-/* ─── AUDIO ENGINE ─── */
-let AC;
-function initAudio() {
-  AC = new (window.AudioContext || window.webkitAudioContext)();
-}
-
-function osc(type, freq, t, dur, vol, dest) {
-  const o = AC.createOscillator();
-  const g = AC.createGain();
-  o.type = type;
-  o.frequency.value = freq;
-  o.connect(g);
-  g.connect(dest || AC.destination);
-  const now = AC.currentTime;
-  g.gain.setValueAtTime(0, now + t);
-  g.gain.linearRampToValueAtTime(vol, now + t + Math.min(0.08, dur * 0.1));
-  g.gain.setValueAtTime(vol, now + t + dur - 0.08);
-  g.gain.linearRampToValueAtTime(0, now + t + dur);
-  o.start(now + t);
-  o.stop(now + t + dur + 0.05);
-}
-
-function tone(freq, t, dur, vol) {
-  osc('sine', freq, t, dur, vol);
-}
-
-function pad(freqs, t, dur, vol) {
-  const master = AC.createGain();
-  const filter = AC.createBiquadFilter();
-  filter.type = 'lowpass';
-  filter.frequency.value = 1200;
-  master.connect(filter);
-  filter.connect(AC.destination);
-  master.gain.setValueAtTime(0, AC.currentTime + t);
-  master.gain.linearRampToValueAtTime(vol, AC.currentTime + t + 1.5);
-  master.gain.setValueAtTime(vol, AC.currentTime + t + dur - 1.5);
-  master.gain.linearRampToValueAtTime(0, AC.currentTime + t + dur);
-  freqs.forEach(f => osc('sine', f, t, dur, 0.7 / freqs.length, master));
-}
-
-function pluck(freq, t, vol) {
-  const now = AC.currentTime;
-  const o = AC.createOscillator();
-  const g = AC.createGain();
-  const f = AC.createBiquadFilter();
-  f.type = 'lowpass'; f.frequency.value = 3000;
-  o.type = 'triangle'; o.frequency.value = freq;
-  o.connect(f); f.connect(g); g.connect(AC.destination);
-  g.gain.setValueAtTime(0, now + t);
-  g.gain.linearRampToValueAtTime(vol, now + t + 0.006);
-  g.gain.exponentialRampToValueAtTime(0.001, now + t + 3.2);
-  o.start(now + t); o.stop(now + t + 3.5);
-}
-
-function bell(freq, t, vol) {
-  const now = AC.currentTime;
-  [1, 2.756, 5.404].forEach((ratio, i) => {
-    const o = AC.createOscillator();
-    const g = AC.createGain();
-    o.type = 'sine'; o.frequency.value = freq * ratio;
-    o.connect(g); g.connect(AC.destination);
-    const v = vol / (i + 1);
-    g.gain.setValueAtTime(0, now + t);
-    g.gain.linearRampToValueAtTime(v, now + t + 0.005);
-    g.gain.exponentialRampToValueAtTime(0.001, now + t + 3.5 - i * 0.4);
-    o.start(now + t); o.stop(now + t + 4);
-  });
-}
-
-function kick(t) {
-  const now = AC.currentTime;
-  const o = AC.createOscillator();
-  const g = AC.createGain();
-  o.type = 'sine';
-  o.frequency.setValueAtTime(90, now + t);
-  o.frequency.exponentialRampToValueAtTime(30, now + t + 0.18);
-  g.gain.setValueAtTime(0.22, now + t);
-  g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.28);
-  o.connect(g); g.connect(AC.destination);
-  o.start(now + t); o.stop(now + t + 0.35);
-}
-
-function hat(t, vol) {
-  const now = AC.currentTime;
-  const buf = AC.createBuffer(1, Math.floor(AC.sampleRate * 0.05), AC.sampleRate);
-  const d = buf.getChannelData(0);
-  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
-  const s = AC.createBufferSource(); s.buffer = buf;
-  const f = AC.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = 10000;
-  const g = AC.createGain();
-  s.connect(f); f.connect(g); g.connect(AC.destination);
-  g.gain.setValueAtTime(vol || 0.025, now + t);
-  g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.04);
-  s.start(now + t); s.stop(now + t + 0.06);
-}
-
-function bass(freq, t, dur, vol) {
-  const now = AC.currentTime;
-  const o = AC.createOscillator();
-  const f = AC.createBiquadFilter();
-  f.type = 'lowpass'; f.frequency.value = 200;
-  const g = AC.createGain();
-  o.type = 'sawtooth'; o.frequency.value = freq;
-  o.connect(f); f.connect(g); g.connect(AC.destination);
-  g.gain.setValueAtTime(0, now + t);
-  g.gain.linearRampToValueAtTime(vol, now + t + 0.02);
-  g.gain.setValueAtTime(vol, now + t + dur - 0.05);
-  g.gain.linearRampToValueAtTime(0, now + t + dur);
-  o.start(now + t); o.stop(now + t + dur + 0.1);
-}
-
-function riser(t, dur) {
-  const now = AC.currentTime;
-  const o = AC.createOscillator();
-  const g = AC.createGain();
-  const f = AC.createBiquadFilter();
-  f.type = 'lowpass';
-  f.frequency.setValueAtTime(200, now + t);
-  f.frequency.exponentialRampToValueAtTime(6000, now + t + dur);
-  o.type = 'sawtooth'; o.frequency.value = 38;
-  o.connect(f); f.connect(g); g.connect(AC.destination);
-  g.gain.setValueAtTime(0, now + t);
-  g.gain.linearRampToValueAtTime(0.06, now + t + dur * 0.7);
-  g.gain.exponentialRampToValueAtTime(0.001, now + t + dur);
-  o.start(now + t); o.stop(now + t + dur + 0.1);
-}
-
-function playScore() {
-  /* ── S1 (0–5s): Void. One drone. Barely breathing. ── */
-  pad([41, 55], 0, 5, 0.05);
-  bell(440, 0.3, 0.035);
-  bell(554, 2.1, 0.03);
-  pluck(330, 0.8, 0.03);
-  pluck(415, 3.2, 0.025);
-  [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5].forEach(t => {
-    if (Math.random() > 0.4) hat(t, 0.012);
-  });
-
-  /* ── S2 (5–11s): Unease builds. Minor. Sparse rhythm. ── */
-  pad([36, 54, 81], 5, 6, 0.065);
-  [5, 6, 7, 8, 9, 10].forEach(t => kick(t));
-  [5, 6, 7, 8, 9, 10].forEach(t => hat(t + 0.5, 0.018));
-  bass(36, 5, 1.8, 0.09); bass(36, 7, 1.8, 0.09); bass(43, 9, 2, 0.08);
-  [294, 330, 370, 330, 277, 294].forEach((f, i) => pluck(f, 6 + i * 0.7, 0.035));
-  riser(9.5, 1.5);
-  bell(220, 9.8, 0.04);
-
-  /* ── S3 (11–17s): Dark sustain. Cost lands. ── */
-  pad([41, 55, 82], 11, 6, 0.07);
-  [11, 12, 13, 14, 15, 16].forEach(t => kick(t));
-  [11, 12, 13, 14, 15, 16].forEach(t => hat(t + 0.5, 0.02));
-  bass(41, 11, 1.5, 0.1); bass(41, 12.5, 1.5, 0.1); bass(36, 14, 3, 0.09);
-  bell(659, 11.3, 0.04); bell(554, 13.1, 0.035); bell(494, 15.2, 0.03);
-  [370, 330, 277, 247].forEach((f, i) => pluck(f, 12 + i * 0.9, 0.04));
-  riser(15.5, 1.5);
-
-  /* ── S4 (17–24s): THE DROP. Brand arrives. Power. ── */
-  kick(17); kick(17.05); kick(17.1);
-  pad([55, 82, 110, 165], 17.3, 6.7, 0.11);
-  pad([165, 220, 330], 17.8, 6.2, 0.07);
-  [659, 880, 1109, 1319, 1760, 2093].forEach((f, i) => bell(f, 17.5 + i * 0.16, 0.08 - i * 0.01));
-  for (let i = 0; i < 6.5; i += 0.5) { kick(18 + i); hat(18 + i + 0.25, 0.028); }
-  [55, 55, 82, 55, 82, 82, 110, 82, 55, 82, 110, 82, 55].forEach((f, i) => bass(f, 18 + i * 0.48, 0.45, 0.14));
-  [523, 659, 784, 1047, 1319, 1047, 784, 659, 523].forEach((f, i) => pluck(f, 19 + i * 0.38, 0.075));
-  [880, 1109, 1319, 1760, 1319].forEach((f, i) => pluck(f, 21 + i * 0.3, 0.065));
-
-  /* ── S5 (24–31s): Purposeful. Confident. Forward march. ── */
-  pad([41, 55, 82, 110, 138], 24, 7, 0.09);
-  for (let i = 0; i < 7; i++) { kick(24 + i); hat(24 + i + 0.5, 0.022); hat(24 + i + 0.25, 0.012); }
-  [55, 55, 82, 55, 82, 82, 110, 55, 82, 110, 82, 55, 110, 82].forEach((f, i) => bass(f, 24 + i * 0.5, 0.47, 0.13));
-  [330, 415, 494, 587, 740, 880, 740, 587, 494, 415, 330, 415, 494, 587, 740].forEach((f, i) => pluck(f, 24.5 + i * 0.4, 0.058));
-
-  /* ── S6 (31–42s): Gold. Resolution. Earned silence. ── */
-  pad([55, 82, 110, 138, 165, 220, 277], 31, 11, 0.13);
-  pad([220, 277, 330, 415, 554], 31.5, 10.5, 0.065);
-  [659, 880, 1047, 1319, 1760, 2093].forEach((f, i) => bell(f, 31.2 + i * 0.17, 0.09 - i * 0.01));
-  for (let i = 0; i < 5; i++) { kick(32 + i); hat(32 + i + 0.5, 0.018 * (1 - i / 8)); }
-  [55, 82, 55, 110, 82, 55].forEach((f, i) => bass(f, 32 + i * 0.55, 0.52, 0.1));
-  [523, 659, 784, 880, 1047, 1319, 1047, 880].forEach((f, i) => pluck(f, 33 + i * 0.55, 0.07));
-  [1047, 1319, 1760, 2093].forEach((f, i) => bell(f, 36 + i * 0.4, 0.06));
-  [880, 1109, 1319].forEach((f, i) => bell(f, 38 + i * 0.5, 0.055));
-  bell(1760, 40, 0.07);
-  bell(2093, 41, 0.065);
-}
-
-/* ─── SCENE ENGINE ─── */
-const SCENE_IDS = ['s1', 's2', 's3', 's4', 's5', 's6'];
-const DURATIONS  = [5000, 6000, 6000, 7000, 7000, 11000];
-const TOTAL = DURATIONS.reduce((a, b) => a + b, 0);
-
-let currentScene = 0;
-let startTS = null;
-const progEl = document.getElementById('prog');
-
-function activateScene(idx) {
-  SCENE_IDS.forEach((id, i) => {
-    const el = document.getElementById(id);
-    el.classList.remove('active', 'in', 'out');
-    if (i === idx) {
-      el.style.display = 'block';
-      // Force reflow
-      void el.offsetWidth;
-      el.classList.add('active', 'in');
-    } else {
-      el.style.display = 'none';
-    }
-  });
-
-  if (idx === 1) setTimeout(startTyping, 600);
-  if (idx === 4) s5StartTime = performance.now();
-}
-
-function loop(ts) {
-  if (!startTS) startTS = ts;
-  const elapsed = ts - startTS;
-
-  progEl.style.width = Math.min(elapsed / TOTAL * 100, 100) + '%';
-  if (s5StartTime) updateS5Timer(ts);
-
-  let acc = 0;
-  let newScene = currentScene;
-  for (let i = 0; i < DURATIONS.length; i++) {
-    acc += DURATIONS[i];
-    if (elapsed < acc) { newScene = i; break; }
-    if (i === DURATIONS.length - 1) newScene = DURATIONS.length - 1;
+/* ---------------- Questions ---------------- */
+const questions = [
+  {
+    key: 'name',
+    label: 'Step 1 of 5',
+    title: 'First, whisper your name to the void',
+    type: 'text',
+    placeholder: 'Tvissha, presumably'
+  },
+  {
+    key: 'number',
+    label: 'Step 2 of 5',
+    title: 'Pick a number. This is very scientific.',
+    type: 'choice',
+    cols: 4,
+    options: ['3','7','13','22']
+  },
+  {
+    key: 'energy',
+    label: 'Step 3 of 5',
+    title: 'What is your current chaos level?',
+    type: 'choice',
+    cols: 1,
+    options: [
+      'Calm, but plotting something',
+      'Mildly unhinged, in a fun way',
+      'Running on iced coffee and vibes',
+      'Suspiciously well put-together'
+    ]
+  },
+  {
+    key: 'element',
+    label: 'Step 4 of 5',
+    title: 'Choose a symbol. Trust your gut.',
+    type: 'choice',
+    cols: 4,
+    icons: ['🌙','⚡','🌊','🔥']
+  },
+  {
+    key: 'snack',
+    label: 'Step 5 of 5',
+    title: 'Last one. Sweet or salty, as a person?',
+    type: 'choice',
+    cols: 2,
+    options: ['Sweet', 'Salty', 'Both, unapologetically', 'Depends who\'s asking']
   }
+];
 
-  if (newScene !== currentScene) {
-    currentScene = newScene;
-    activateScene(currentScene);
-  }
+let current = 0;
+const answers = {};
 
-  if (elapsed < TOTAL + 800) {
-    requestAnimationFrame(loop);
+function renderProgress(){
+  const dots = document.getElementById('progressDots');
+  dots.innerHTML = '';
+  questions.forEach((_,i)=>{
+    const d = document.createElement('span');
+    if(i < current || (i===current)) d.classList.toggle('done', i <= current);
+    dots.appendChild(d);
+  });
+}
+
+function renderQuestion(){
+  renderProgress();
+  const q = questions[current];
+  const mount = document.getElementById('questionMount');
+  let html = `<div class="q-label">${q.label}</div><div class="q-title">${q.title}</div>`;
+
+  if(q.type === 'text'){
+    html += `<input type="text" id="textInput" placeholder="${q.placeholder}" autocomplete="off" value="${answers[q.key]||''}">`;
   } else {
-    setTimeout(() => {
-      currentScene = 0;
-      startTS = null;
-      s5StartTime = null;
-      activateScene(0);
-      requestAnimationFrame(loop);
-    }, 1400);
+    html += `<div class="choices" style="grid-template-columns: repeat(${q.cols===1?1:(q.cols===4?4:2)}, 1fr);">`;
+    const items = q.icons || q.options;
+    items.forEach((item)=>{
+      const selected = answers[q.key] === item ? 'selected' : '';
+      html += `<button type="button" class="choice-btn ${selected}" onclick="selectChoice('${q.key}', this)" data-val="${item.replace(/'/g,"\\'")}" style="${q.icons ? 'font-size:26px;padding:16px 8px;' : ''}">${item}</button>`;
+    });
+    html += `</div>`;
+  }
+
+  html += `<div class="q-nav"><button class="btn" id="nextBtn" onclick="nextQuestion()">${current === questions.length-1 ? 'Reveal My Fate ✦' : 'Next →'}</button></div>`;
+  mount.innerHTML = html;
+
+  if(q.type === 'text'){
+    const input = document.getElementById('textInput');
+    input.focus();
+    input.addEventListener('input', ()=>{ answers[q.key] = input.value; });
+    input.addEventListener('keydown', (e)=>{ if(e.key==='Enter') nextQuestion(); });
+  }
+
+  updateNextState();
+}
+
+function selectChoice(key, el){
+  answers[key] = el.getAttribute('data-val');
+  el.parentElement.querySelectorAll('.choice-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+  updateNextState();
+}
+
+function updateNextState(){
+  const q = questions[current];
+  const nextBtn = document.getElementById('nextBtn');
+  const hasAnswer = q.type === 'text' ? (answers[q.key] && answers[q.key].trim().length>0) : !!answers[q.key];
+  nextBtn.disabled = !hasAnswer;
+}
+
+function nextQuestion(){
+  const q = questions[current];
+  const hasAnswer = q.type === 'text' ? (answers[q.key] && answers[q.key].trim().length>0) : !!answers[q.key];
+  if(!hasAnswer) return;
+
+  if(current < questions.length - 1){
+    current++;
+    renderQuestion();
+  } else {
+    runLoadingSequence();
   }
 }
 
-/* ─── PLAY ─── */
-document.getElementById('playBtn').addEventListener('click', () => {
-  initAudio();
-  playScore();
-  document.getElementById('gate').style.display = 'none';
-  document.getElementById('stage').style.display = 'block';
-  activateScene(0);
-  requestAnimationFrame(loop);
-});
+/* ---------------- Loading sequence ---------------- */
+const loadingLines = [
+  'Consulting the stars...',
+  'Reading the vibes...',
+  'Cross-referencing your chaos level...',
+  'Asking the moon for a second opinion...',
+  'Ignoring several red flags...',
+  'Calculating something that looks scientific...',
+  'Finalizing your fate...'
+];
+
+function runLoadingSequence(){
+  goTo('loading');
+  const textEl = document.getElementById('loadingText');
+  const fill = document.getElementById('loadingFill');
+  let i = 0;
+  textEl.textContent = loadingLines[0];
+  requestAnimationFrame(()=>{ fill.style.width = '100%'; });
+
+  const interval = setInterval(()=>{
+    i++;
+    if(i < loadingLines.length){
+      textEl.textContent = loadingLines[i];
+    }
+  }, 480);
+
+  setTimeout(()=>{
+    clearInterval(interval);
+    buildProphecy();
+    goTo('reveal');
+  }, 3400);
+}
+
+/* ---------------- Prophecy generation ---------------- */
+const cardTitles = [
+  'The Unbothered Star', 'The Main Character', 'The Wildcard', 'The Quiet Storm',
+  'The Late Bloom', 'The Plot Twist', 'The Ringleader', 'The Bright Omen'
+];
+
+const openers = {
+  'Calm, but plotting something': "The signs suggest you're calmer than you let on, which is somehow more unsettling to everyone around you.",
+  'Mildly unhinged, in a fun way': "The stars confirm what your group chat already knows: you're a little unhinged, but the good kind.",
+  'Running on iced coffee and vibes': "The universe sees your bloodstream is 40% caffeine and respects the commitment.",
+  'Suspiciously well put-together': "The oracle is deeply suspicious of how put-together you appear, and demands to know your secrets."
+};
+
+const elementFlavor = {
+  '🌙': "Your ruling symbol is the moon — which tracks, because you clearly run on your own schedule and answer to no one.",
+  '⚡': "You chose lightning, which means chaos follows you, but only the interesting kind.",
+  '🌊': "The wave was your pick, so of course you're impossible to predict and somehow always land on your feet anyway.",
+  '🔥': "Fire, obviously. You didn't need an oracle to tell you that."
+};
+
+const middles = [
+  "Somewhere between now and the next full moon, a decision you've been putting off will stop being a big deal for no clear reason.",
+  "A message is coming that you'll pretend not to be excited about. You will, in fact, be excited about it.",
+  "You are about to be right about something you weren't even that confident about. Enjoy it.",
+  "Someone is going to underestimate you this week. This has historically gone poorly for them.",
+  "The next interesting thing that happens to you will not be planned, and you will take full credit for it anyway."
+];
+
+const romanceLines = [
+  "There is a name that keeps reappearing in this reading, and the oracle is choosing not to make this weird — but it's <strong>a certain web developer from Mumbai</strong>, for the record.",
+  "A pattern in the cards keeps circling back to someone building things for you without being asked. The oracle finds this notable. You should too.",
+  "One card in this spread is annoyingly persistent — it keeps landing on someone who, statistically, has spent more time on this website than most people spend on anything.",
+  "The stars are being unusually specific today: someone in your orbit is putting in more effort than the situation currently calls for. The oracle is simply reporting the facts.",
+  "There's a recurring signal pointing toward a person who clearly has more range than 'just a friend.' The oracle isn't saying who. The oracle doesn't have to."
+];
+
+const closers = [
+  "Fate is not obligated to make sense. It is, however, obligated to be entertaining.",
+  "Take this exactly as seriously as it deserves — which is to say, framed and printed, ideally.",
+  "The oracle has spoken. The oracle would also like a coffee, if anyone's offering.",
+  "This has been independently verified by absolutely no one, and is 100% correct anyway."
+];
+
+function buildProphecy(){
+  const name = (answers.name || 'Traveler').trim();
+  const firstName = name.split(' ')[0];
+  const title = cardTitles[Math.floor(Math.random()*cardTitles.length)];
+
+  const opener = openers[answers.energy] || openers['Calm, but plotting something'];
+  const elFlavor = elementFlavor[answers.element] || '';
+  const middle = middles[Math.floor(Math.random()*middles.length)];
+  const romance = romanceLines[Math.floor(Math.random()*romanceLines.length)];
+  const closer = closers[Math.floor(Math.random()*closers.length)];
+
+  document.getElementById('cardName').textContent = `CARD DRAWN: ${title.toUpperCase()}`;
+  document.getElementById('revealTitle').textContent = `${firstName}'s Fortune`;
+
+  document.getElementById('revealBody').innerHTML = `
+    <p>${opener}</p>
+    <p>${elFlavor}</p>
+    <p>${middle}</p>
+    <p>${romance}</p>
+    <p style="font-size:16px; opacity:0.8; margin-top:20px;">${closer}</p>
+  `;
+}
+
+function reroll(){
+  buildProphecy();
+}
+
+/* ---------------- Confetti ---------------- */
+function celebrate(){
+  const layer = document.getElementById('confetti-layer');
+  const colors = ['#c9a876','#9b7fd4','#e8546b','#f2ead6'];
+  for(let i=0;i<60;i++){
+    const p = document.createElement('div');
+    const size = Math.random()*8+4;
+    p.style.position = 'absolute';
+    p.style.left = Math.random()*100+'%';
+    p.style.top = '-10px';
+    p.style.width = size+'px';
+    p.style.height = size+'px';
+    p.style.background = colors[Math.floor(Math.random()*colors.length)];
+    p.style.borderRadius = Math.random()>0.5 ? '50%' : '2px';
+    p.style.opacity = '0.9';
+    const duration = Math.random()*2+2.5;
+    const drift = (Math.random()-0.5)*200;
+    p.animate([
+      { transform: `translate(0,0) rotate(0deg)`, opacity: 1 },
+      { transform: `translate(${drift}px, 100vh) rotate(${Math.random()*720}deg)`, opacity: 0.3 }
+    ], { duration: duration*1000, easing: 'cubic-bezier(0.4,0,0.6,1)' });
+    layer.appendChild(p);
+    setTimeout(()=>p.remove(), duration*1000);
+  }
+}
+
+renderQuestion();
 </script>
+
 </body>
 </html>
